@@ -1,0 +1,125 @@
+@model SistemaParqueaderoWEB.Models.RegistroParqueo
+@{
+    ViewData["Title"] = "Registrar Entrada";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">🚗 Registrar Entrada de Vehículo</h3>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Mensaje"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @TempData["Mensaje"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <form asp-action="Entrada" method="post" id="formEntrada">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="mb-3">
+                            <label for="placa" class="form-label">Placa del Vehículo *</label>
+                            <input type="text" class="form-control form-control-lg" id="placa" name="placa" 
+                                   placeholder="Ej: ABC123" required autofocus maxlength="10" 
+                                   style="text-transform: uppercase;" />
+                            <small class="form-text text-muted">Ingrese la placa del vehículo</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="tipoVehiculo" class="form-label">Tipo de Vehículo *</label>
+                            <select class="form-select form-select-lg" id="tipoVehiculo" name="tipoVehiculo" required>
+                                <option value="">Seleccione...</option>
+                                <option value="1">🚗 Carro</option>
+                                <option value="2">🏍️ Moto</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="codigoBarras" class="form-label">Código de Barras/QR (Opcional)</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control form-control-lg" id="codigoBarras" 
+                                       name="codigoBarras" placeholder="Escaneé o ingrese el código" />
+                                <button type="button" class="btn btn-outline-secondary" id="btnEscanear">
+                                    📷 Escanear
+                                </button>
+                            </div>
+                            <small class="form-text text-muted">Si no se proporciona, se generará automáticamente</small>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-check-circle"></i> Registrar Entrada
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary btn-lg">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para escáner -->
+<div class="modal fade" id="modalEscanner" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Escáner de Código QR/Barras</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="reader" style="width: 100%;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Convertir placa a mayúsculas
+            $('#placa').on('input', function() {
+                this.value = this.value.toUpperCase();
+            });
+
+            // Inicializar escáner
+            let html5QrcodeScanner = null;
+            
+            $('#btnEscanear').on('click', function() {
+                $('#modalEscanner').modal('show');
+                
+                if (!html5QrcodeScanner) {
+                    html5QrcodeScanner = new Html5Qrcode("reader");
+                }
+                
+                html5QrcodeScanner.start(
+                    { facingMode: "environment" },
+                    {
+                        fps: 10,
+                        qrbox: { width: 250, height: 250 }
+                    },
+                    (decodedText, decodedResult) => {
+                        $('#codigoBarras').val(decodedText);
+                        $('#modalEscanner').modal('hide');
+                        html5QrcodeScanner.stop();
+                    },
+                    (errorMessage) => {
+                        // Ignorar errores de escaneo
+                    }
+                );
+            });
+
+            $('#modalEscanner').on('hidden.bs.modal', function() {
+                if (html5QrcodeScanner) {
+                    html5QrcodeScanner.stop().catch(err => {});
+                }
+            });
+        });
+    </script>
+}

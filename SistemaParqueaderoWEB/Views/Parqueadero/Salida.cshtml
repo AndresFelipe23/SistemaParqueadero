@@ -1,0 +1,161 @@
+@{
+    ViewData["Title"] = "Registrar Salida";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white">
+                    <h3 class="mb-0">🚗 Registrar Salida de Vehículo</h3>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Mensaje"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @TempData["Mensaje"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <form asp-action="Salida" method="post" id="formSalida">
+                        <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                        <div class="mb-3">
+                            <label for="placa" class="form-label">Placa del Vehículo</label>
+                            <input type="text" class="form-control form-control-lg" id="placa" name="placa" 
+                                   placeholder="Ej: ABC123" maxlength="10" 
+                                   style="text-transform: uppercase;" />
+                            <small class="form-text text-muted">O ingrese el código de barras/QR</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="codigoBarras" class="form-label">Código de Barras/QR</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control form-control-lg" id="codigoBarras" 
+                                       name="codigoBarras" placeholder="Escaneé o ingrese el código" />
+                                <button type="button" class="btn btn-outline-secondary" id="btnEscanear">
+                                    📷 Escanear
+                                </button>
+                            </div>
+                            <small class="form-text text-muted">Escaneé el código del recibo de entrada</small>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <strong>Nota:</strong> Debe proporcionar la placa o el código de barras/QR
+                        </div>
+
+                        <div id="infoVehiculo" class="alert alert-warning d-none">
+                            <h5>Información del Vehículo</h5>
+                            <p><strong>Placa:</strong> <span id="infoPlaca"></span></p>
+                            <p><strong>Tipo:</strong> <span id="infoTipo"></span></p>
+                            <p><strong>Hora de Entrada:</strong> <span id="infoEntrada"></span></p>
+                            <p><strong>Tiempo Parqueado:</strong> <span id="infoTiempo"></span></p>
+                            <p><strong>Monto Estimado:</strong> <span id="infoMonto"></span></p>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger btn-lg" id="btnRegistrarSalida">
+                                <i class="bi bi-check-circle"></i> Registrar Salida e Imprimir Recibo
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary btn-lg">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para escáner -->
+<div class="modal fade" id="modalEscanner" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Escáner de Código QR/Barras</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="reader" style="width: 100%;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Convertir placa a mayúsculas
+            $('#placa').on('input', function() {
+                this.value = this.value.toUpperCase();
+                consultarVehiculo();
+            });
+
+            $('#codigoBarras').on('input', function() {
+                consultarVehiculo();
+            });
+
+            function consultarVehiculo() {
+                const placa = $('#placa').val().trim();
+                const codigoBarras = $('#codigoBarras').val().trim();
+
+                if (!placa && !codigoBarras) {
+                    $('#infoVehiculo').addClass('d-none');
+                    return;
+                }
+
+                $.get('/Parqueadero/Consultar', { placa: placa, codigoBarras: codigoBarras })
+                    .done(function(data) {
+                        if (data.success) {
+                            $('#infoPlaca').text(data.registro.placa);
+                            $('#infoTipo').text(data.registro.tipoVehiculo);
+                            $('#infoEntrada').text(data.registro.fechaEntrada);
+                            $('#infoTiempo').text(data.registro.tiempoParqueado);
+                            $('#infoMonto').text(data.registro.montoEstimado);
+                            $('#infoVehiculo').removeClass('d-none');
+                        } else {
+                            $('#infoVehiculo').addClass('d-none');
+                        }
+                    })
+                    .fail(function() {
+                        $('#infoVehiculo').addClass('d-none');
+                    });
+            }
+
+            // Inicializar escáner
+            let html5QrcodeScanner = null;
+            
+            $('#btnEscanear').on('click', function() {
+                $('#modalEscanner').modal('show');
+                
+                if (!html5QrcodeScanner) {
+                    html5QrcodeScanner = new Html5Qrcode("reader");
+                }
+                
+                html5QrcodeScanner.start(
+                    { facingMode: "environment" },
+                    {
+                        fps: 10,
+                        qrbox: { width: 250, height: 250 }
+                    },
+                    (decodedText, decodedResult) => {
+                        $('#codigoBarras').val(decodedText);
+                        $('#modalEscanner').modal('hide');
+                        html5QrcodeScanner.stop();
+                        consultarVehiculo();
+                    },
+                    (errorMessage) => {
+                        // Ignorar errores de escaneo
+                    }
+                );
+            });
+
+            $('#modalEscanner').on('hidden.bs.modal', function() {
+                if (html5QrcodeScanner) {
+                    html5QrcodeScanner.stop().catch(err => {});
+                }
+            });
+        });
+    </script>
+}

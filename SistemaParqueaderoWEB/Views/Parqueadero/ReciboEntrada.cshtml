@@ -1,0 +1,132 @@
+@model SistemaParqueaderoWEB.Models.ReciboViewModel
+@{
+    ViewData["Title"] = "Recibo de Entrada";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow" id="recibo">
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <h2 class="mb-0">🚗 PARQUEADERO</h2>
+                        <p class="text-muted mb-0">Montería, Colombia</p>
+                        <hr class="my-2">
+                        <h4 class="text-success">RECIBO DE ENTRADA</h4>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="row">
+                            <div class="col-6">
+                                <strong>Número de Ticket:</strong>
+                            </div>
+                            <div class="col-6 text-end">
+                                #@Model.Id
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="row">
+                            <div class="col-6">
+                                <strong>Placa:</strong>
+                            </div>
+                            <div class="col-6 text-end">
+                                @Model.Placa
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="row">
+                            <div class="col-6">
+                                <strong>Tipo de Vehículo:</strong>
+                            </div>
+                            <div class="col-6 text-end">
+                                @Model.TipoVehiculo
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="row">
+                            <div class="col-6">
+                                <strong>Fecha y Hora de Entrada:</strong>
+                            </div>
+                            <div class="col-6 text-end">
+                                @Model.FechaEntrada.ToString("dd/MM/yyyy HH:mm:ss")
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-3">
+
+                    <div class="mb-3 text-center">
+                        <div class="mb-2">
+                            <strong>Código de Barras/QR:</strong>
+                        </div>
+                        <div class="mb-2">
+                            <small class="text-muted">@Model.CodigoBarras</small>
+                        </div>
+                        <div id="qrcode"></div>
+                    </div>
+
+                    <hr class="my-3">
+
+                    <div class="alert alert-warning text-center mb-0">
+                        <small>
+                            <strong>IMPORTANTE:</strong> Conserve este recibo para la salida.<br>
+                            Escanee el código QR al salir.
+                        </small>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <small class="text-muted">
+                            @DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <button onclick="window.print()" class="btn btn-primary btn-lg me-2">
+                    🖨️ Imprimir Recibo
+                </button>
+                <a asp-action="Index" class="btn btn-secondary btn-lg">Volver al Inicio</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Generar código QR
+            new QRCode(document.getElementById("qrcode"), {
+                text: "@Model.CodigoBarras",
+                width: 200,
+                height: 200
+            });
+        });
+    </script>
+    <style>
+        @@media print {
+            body * {
+                visibility: hidden;
+            }
+            #recibo, #recibo * {
+                visibility: visible;
+            }
+            #recibo {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+            .btn, .text-center.mt-4 {
+                display: none !important;
+            }
+        }
+    </style>
+}
