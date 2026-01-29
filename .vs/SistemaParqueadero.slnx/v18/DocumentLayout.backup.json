@@ -1,14 +1,22 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\57315\\source\\repos\\SistemaParqueadero\\",
+  "WorkspaceRootPath": "C:\\Users\\andre\\source\\repos\\AndresFelipe23\\SistemaParqueadero\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{67936238-38B0-4AE2-AD62-770DE268EDD8}|SistemaParqueaderoWEB\\SistemaParqueaderoWEB.csproj|c:\\users\\57315\\source\\repos\\sistemaparqueadero\\sistemaparqueaderoweb\\sistemaparqueaderoweb.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
-      "RelativeMoniker": "D:0:0:{67936238-38B0-4AE2-AD62-770DE268EDD8}|SistemaParqueaderoWEB\\SistemaParqueaderoWEB.csproj|solutionrelative:sistemaparqueaderoweb\\sistemaparqueaderoweb.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+      "AbsoluteMoniker": "D:0:0:{D818803E-631A-185E-5852-E917EFC357BA}|SistemaParqueaderoWEB\\SistemaParqueaderoWEB.csproj|c:\\users\\andre\\source\\repos\\andresfelipe23\\sistemaparqueadero\\sistemaparqueaderoweb\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{D818803E-631A-185E-5852-E917EFC357BA}|SistemaParqueaderoWEB\\SistemaParqueaderoWEB.csproj|solutionrelative:sistemaparqueaderoweb\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{67936238-38B0-4AE2-AD62-770DE268EDD8}|SistemaParqueaderoWEB\\SistemaParqueaderoWEB.csproj|c:\\users\\57315\\source\\repos\\sistemaparqueadero\\sistemaparqueaderoweb\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{67936238-38B0-4AE2-AD62-770DE268EDD8}|SistemaParqueaderoWEB\\SistemaParqueaderoWEB.csproj|solutionrelative:sistemaparqueaderoweb\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+      "AbsoluteMoniker": "D:0:0:{D818803E-631A-185E-5852-E917EFC357BA}|SistemaParqueaderoWEB\\SistemaParqueaderoWEB.csproj|c:\\users\\andre\\source\\repos\\andresfelipe23\\sistemaparqueadero\\sistemaparqueaderoweb\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{D818803E-631A-185E-5852-E917EFC357BA}|SistemaParqueaderoWEB\\SistemaParqueaderoWEB.csproj|solutionrelative:sistemaparqueaderoweb\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D818803E-631A-185E-5852-E917EFC357BA}|SistemaParqueaderoWEB\\SistemaParqueaderoWEB.csproj|c:\\users\\andre\\source\\repos\\andresfelipe23\\sistemaparqueadero\\sistemaparqueaderoweb\\sistemaparqueaderoweb.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{D818803E-631A-185E-5852-E917EFC357BA}|SistemaParqueaderoWEB\\SistemaParqueaderoWEB.csproj|solutionrelative:sistemaparqueaderoweb\\sistemaparqueaderoweb.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D818803E-631A-185E-5852-E917EFC357BA}|SistemaParqueaderoWEB\\SistemaParqueaderoWEB.csproj|c:\\users\\andre\\source\\repos\\andresfelipe23\\sistemaparqueadero\\sistemaparqueaderoweb\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{D818803E-631A-185E-5852-E917EFC357BA}|SistemaParqueaderoWEB\\SistemaParqueaderoWEB.csproj|solutionrelative:sistemaparqueaderoweb\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     }
   ],
   "DocumentGroupContainers": [
@@ -18,7 +26,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 263,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": 6,
           "Children": [
             {
               "$type": "Bookmark",
@@ -34,26 +42,49 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "SistemaParqueaderoWEB",
-              "DocumentMoniker": "C:\\Users\\57315\\source\\repos\\SistemaParqueadero\\SistemaParqueaderoWEB\\SistemaParqueaderoWEB.csproj",
-              "RelativeDocumentMoniker": "SistemaParqueaderoWEB\\SistemaParqueaderoWEB.csproj",
-              "ToolTip": "C:\\Users\\57315\\source\\repos\\SistemaParqueadero\\SistemaParqueaderoWEB\\SistemaParqueaderoWEB.csproj",
-              "RelativeToolTip": "SistemaParqueaderoWEB\\SistemaParqueaderoWEB.csproj",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2026-01-26T22:01:35.59Z",
-              "EditorCaption": ""
+              "DocumentIndex": 1,
+              "Title": "appsettings.Development.json",
+              "DocumentMoniker": "C:\\Users\\andre\\source\\repos\\AndresFelipe23\\SistemaParqueadero\\SistemaParqueaderoWEB\\appsettings.Development.json",
+              "RelativeDocumentMoniker": "SistemaParqueaderoWEB\\appsettings.Development.json",
+              "ToolTip": "C:\\Users\\andre\\source\\repos\\AndresFelipe23\\SistemaParqueadero\\SistemaParqueaderoWEB\\appsettings.Development.json",
+              "RelativeToolTip": "SistemaParqueaderoWEB\\appsettings.Development.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAABjAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-01-27T15:09:26.034Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 3,
+              "Title": "_Layout.cshtml",
+              "DocumentMoniker": "C:\\Users\\andre\\source\\repos\\AndresFelipe23\\SistemaParqueadero\\SistemaParqueaderoWEB\\Views\\Shared\\_Layout.cshtml",
+              "RelativeDocumentMoniker": "SistemaParqueaderoWEB\\Views\\Shared\\_Layout.cshtml",
+              "ToolTip": "C:\\Users\\andre\\source\\repos\\AndresFelipe23\\SistemaParqueadero\\SistemaParqueaderoWEB\\Views\\Shared\\_Layout.cshtml",
+              "RelativeToolTip": "SistemaParqueaderoWEB\\Views\\Shared\\_Layout.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAABcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-01-27T13:46:45.32Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "SistemaParqueaderoWEB.csproj",
+              "DocumentMoniker": "C:\\Users\\andre\\source\\repos\\AndresFelipe23\\SistemaParqueadero\\SistemaParqueaderoWEB\\SistemaParqueaderoWEB.csproj",
+              "RelativeDocumentMoniker": "SistemaParqueaderoWEB\\SistemaParqueaderoWEB.csproj",
+              "ToolTip": "C:\\Users\\andre\\source\\repos\\AndresFelipe23\\SistemaParqueadero\\SistemaParqueaderoWEB\\SistemaParqueaderoWEB.csproj",
+              "RelativeToolTip": "SistemaParqueaderoWEB\\SistemaParqueaderoWEB.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAABVAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-01-26T22:01:35.59Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
               "Title": "appsettings.json",
-              "DocumentMoniker": "C:\\Users\\57315\\source\\repos\\SistemaParqueadero\\SistemaParqueaderoWEB\\appsettings.json",
+              "DocumentMoniker": "C:\\Users\\andre\\source\\repos\\AndresFelipe23\\SistemaParqueadero\\SistemaParqueaderoWEB\\appsettings.json",
               "RelativeDocumentMoniker": "SistemaParqueaderoWEB\\appsettings.json",
-              "ToolTip": "C:\\Users\\57315\\source\\repos\\SistemaParqueadero\\SistemaParqueaderoWEB\\appsettings.json",
+              "ToolTip": "C:\\Users\\andre\\source\\repos\\AndresFelipe23\\SistemaParqueadero\\SistemaParqueaderoWEB\\appsettings.json",
               "RelativeToolTip": "SistemaParqueaderoWEB\\appsettings.json",
-              "ViewState": "AgIAAAMAAAAAAAAAAAAmwA0AAAAnAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
               "WhenOpened": "2026-01-26T21:11:55.53Z",
               "EditorCaption": ""
@@ -67,6 +98,10 @@
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{40ea2e6b-2121-4bb8-a43e-c83c04b51041}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{a34b1c5d-6d37-4a0c-a8b0-99f8e8158b48}"
             }
           ]
         }

@@ -1,0 +1,163 @@
+@model SistemaParqueaderoWEB.Models.Pago
+@{
+    ViewData["Title"] = "Detalle de Pago";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h4 class="fw-semibold mb-1">Detalle de Pago</h4>
+        <p class="text-muted mb-0">Información completa del pago registrado</p>
+    </div>
+    <div>
+        <a asp-action="Historial" class="btn btn-light border me-2">
+            <iconify-icon icon="solar:arrow-left-line-duotone" class="me-1"></iconify-icon>
+            Volver al historial
+        </a>
+        <a asp-controller="Parqueadero" asp-action="Index" class="btn btn-light border">
+            <iconify-icon icon="solar:home-angle-line-duotone" class="me-1"></iconify-icon>
+            Inicio
+        </a>
+    </div>
+</div>
+
+<!-- Información del pago -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card border-top border-top-4 border-top-success">
+            <div class="card-body">
+                <p class="mb-1 text-muted small">Monto pagado</p>
+                <h4 class="mb-0 fw-semibold text-success">
+                    @Model.Monto.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-CO"))
+                </h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-top border-top-4 border-top-info">
+            <div class="card-body">
+                <p class="mb-1 text-muted small">Método de pago</p>
+                <h5 class="mb-0 fw-semibold">@Model.MetodoPago</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-top border-top-4 @(Model.EstadoPago == "Completado" ? "border-top-success" : Model.EstadoPago == "Pendiente" ? "border-top-warning" : "border-top-danger")">
+            <div class="card-body">
+                <p class="mb-1 text-muted small">Estado</p>
+                <span class="badge @(Model.EstadoPago == "Completado" ? "bg-success" : Model.EstadoPago == "Pendiente" ? "bg-warning" : "bg-danger") fs-6">
+                    @Model.EstadoPago
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Información del registro -->
+@if (Model.RegistroParqueo != null)
+{
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title fw-semibold mb-3">
+                <iconify-icon icon="solar:car-line-duotone" class="me-2"></iconify-icon>
+                Información del servicio
+            </h5>
+            <div class="row">
+                <div class="col-md-3">
+                    <p class="mb-1 text-muted small">Ticket</p>
+                    <span class="badge bg-secondary">#@Model.RegistroParqueo.Id</span>
+                </div>
+                <div class="col-md-3">
+                    <p class="mb-1 text-muted small">Placa</p>
+                    <strong class="fs-5 text-primary">@Model.RegistroParqueo.Placa</strong>
+                </div>
+                <div class="col-md-3">
+                    <p class="mb-1 text-muted small">Tipo</p>
+                    <span class="badge @(Model.RegistroParqueo.TipoVehiculo == SistemaParqueaderoWEB.Models.TipoVehiculo.Carro ? "bg-info" : "bg-warning")">
+                        @Model.RegistroParqueo.TipoVehiculoTexto
+                    </span>
+                </div>
+                <div class="col-md-3">
+                    <p class="mb-1 text-muted small">Código</p>
+                    <code class="small">@Model.RegistroParqueo.CodigoBarras</code>
+                </div>
+            </div>
+            <hr class="my-3" />
+            <div class="row">
+                <div class="col-md-3">
+                    <p class="mb-1 text-muted small">Fecha entrada</p>
+                    <strong>@Model.RegistroParqueo.FechaEntrada.ToString("dd/MM/yyyy HH:mm")</strong>
+                </div>
+                <div class="col-md-3">
+                    <p class="mb-1 text-muted small">Fecha salida</p>
+                    <strong>@(Model.RegistroParqueo.FechaSalida?.ToString("dd/MM/yyyy HH:mm") ?? "-")</strong>
+                </div>
+                <div class="col-md-3">
+                    <p class="mb-1 text-muted small">Tiempo parqueado</p>
+                    @if (Model.RegistroParqueo.TiempoParqueado.HasValue)
+                    {
+                        var tiempo = Model.RegistroParqueo.TiempoParqueado.Value;
+                        <strong>
+                            @if (tiempo.Days > 0)
+                            {
+                                <span>@tiempo.Days d </span>
+                            }
+                            @tiempo.Hours h @tiempo.Minutes m
+                        </strong>
+                    }
+                    else
+                    {
+                        <strong>-</strong>
+                    }
+                </div>
+                <div class="col-md-3">
+                    <p class="mb-1 text-muted small">Monto del servicio</p>
+                    <strong class="text-success">
+                        @((Model.RegistroParqueo.MontoFinal ?? Model.RegistroParqueo.MontoTotal ?? 0).ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-CO")))
+                    </strong>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Detalles del pago -->
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title fw-semibold mb-3">
+            <iconify-icon icon="solar:wallet-money-line-duotone" class="me-2"></iconify-icon>
+            Detalles del pago
+        </h5>
+        <div class="row">
+            <div class="col-md-6">
+                <p class="mb-2">
+                    <span class="text-muted small">ID de pago:</span><br />
+                    <strong>#@Model.Id</strong>
+                </p>
+                <p class="mb-2">
+                    <span class="text-muted small">Fecha de pago:</span><br />
+                    <strong>@Model.FechaPago.ToString("dd/MM/yyyy HH:mm:ss")</strong>
+                </p>
+                <p class="mb-2">
+                    <span class="text-muted small">Usuario que procesó:</span><br />
+                    <strong>@(Model.UsuarioPago?.NombreCompleto ?? "-")</strong>
+                </p>
+            </div>
+            <div class="col-md-6">
+                @if (!string.IsNullOrWhiteSpace(Model.ReferenciaPago))
+                {
+                    <p class="mb-2">
+                        <span class="text-muted small">Referencia:</span><br />
+                        <strong>@Model.ReferenciaPago</strong>
+                    </p>
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.Observaciones))
+                {
+                    <p class="mb-2">
+                        <span class="text-muted small">Observaciones:</span><br />
+                        @Model.Observaciones
+                    </p>
+                }
+            </div>
+        </div>
+    </div>
+</div>

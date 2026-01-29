@@ -28,6 +28,7 @@ namespace SistemaParqueaderoWEB.Models
 
         [Required]
         [StringLength(50)]
+        [Column("Usuario")] // Mapea la propiedad UsuarioNombre a la columna 'Usuario' de la tabla
         public string UsuarioNombre { get; set; } = string.Empty;
 
         [Required]

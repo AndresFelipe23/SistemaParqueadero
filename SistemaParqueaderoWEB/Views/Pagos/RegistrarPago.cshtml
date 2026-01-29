@@ -1,0 +1,220 @@
+@model SistemaParqueaderoWEB.Models.PagoViewModel
+@{
+    ViewData["Title"] = "Registrar Pago";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h4 class="fw-semibold mb-1">Registrar Pago</h4>
+        <p class="text-muted mb-0">Complete el pago del servicio de parqueadero</p>
+    </div>
+    <a asp-controller="Parqueadero" asp-action="Index" class="btn btn-light border">
+        <iconify-icon icon="solar:arrow-left-line-duotone" class="me-1"></iconify-icon>
+        Volver
+    </a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <iconify-icon icon="solar:check-circle-line-duotone" class="me-2"></iconify-icon>
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <iconify-icon icon="solar:danger-triangle-line-duotone" class="me-2"></iconify-icon>
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (Model.RegistroParqueo != null)
+{
+    <!-- Información del registro -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title fw-semibold mb-3">
+                <iconify-icon icon="solar:car-line-duotone" class="me-2"></iconify-icon>
+                Información del servicio
+            </h5>
+            <div class="row">
+                <div class="col-md-3">
+                    <p class="mb-1 text-muted small">Placa</p>
+                    <strong class="fs-5 text-primary">@Model.RegistroParqueo.Placa</strong>
+                </div>
+                <div class="col-md-3">
+                    <p class="mb-1 text-muted small">Tipo de vehículo</p>
+                    <span class="badge @(Model.RegistroParqueo.TipoVehiculo == SistemaParqueaderoWEB.Models.TipoVehiculo.Carro ? "bg-info" : "bg-warning")">
+                        @Model.RegistroParqueo.TipoVehiculoTexto
+                    </span>
+                </div>
+                <div class="col-md-3">
+                    <p class="mb-1 text-muted small">Entrada</p>
+                    <strong>@Model.RegistroParqueo.FechaEntrada.ToString("dd/MM/yyyy HH:mm")</strong>
+                </div>
+                <div class="col-md-3">
+                    <p class="mb-1 text-muted small">Salida</p>
+                    <strong>@(Model.RegistroParqueo.FechaSalida?.ToString("dd/MM/yyyy HH:mm") ?? "-")</strong>
+                </div>
+            </div>
+            @if (Model.RegistroParqueo.TiempoParqueado.HasValue)
+            {
+                <div class="row mt-3">
+                    <div class="col-md-4">
+                        <p class="mb-1 text-muted small">Tiempo parqueado</p>
+                        <strong>
+                            @if (Model.RegistroParqueo.TiempoParqueado.Value.Days > 0)
+                            {
+                                <span>@Model.RegistroParqueo.TiempoParqueado.Value.Days d </span>
+                            }
+                            @Model.RegistroParqueo.TiempoParqueado.Value.Hours h @Model.RegistroParqueo.TiempoParqueado.Value.Minutes m
+                        </strong>
+                    </div>
+                    <div class="col-md-4">
+                        <p class="mb-1 text-muted small">Monto total</p>
+                        <strong class="fs-5 text-success">
+                            @((Model.RegistroParqueo.MontoFinal ?? Model.RegistroParqueo.MontoTotal ?? 0).ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-CO")))
+                        </strong>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<!-- Formulario de pago -->
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title fw-semibold mb-4">
+            <iconify-icon icon="solar:wallet-money-line-duotone" class="me-2"></iconify-icon>
+            Datos del pago
+        </h5>
+
+        <form asp-action="RegistrarPago" method="post">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+            
+            <input type="hidden" asp-for="RegistroParqueoId" />
+
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <label asp-for="Monto" class="form-label fw-semibold">
+                        Monto a pagar <span class="text-danger">*</span>
+                    </label>
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text">$</span>
+                        <input asp-for="Monto" 
+                               class="form-control" 
+                               type="number" 
+                               step="0.01" 
+                               min="0.01" 
+                               readonly />
+                    </div>
+                    <span asp-validation-for="Monto" class="text-danger small"></span>
+                    <small class="text-muted">Este monto corresponde al servicio de parqueadero</small>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="MetodoPago" class="form-label fw-semibold">
+                        Método de pago <span class="text-danger">*</span>
+                    </label>
+                    <select asp-for="MetodoPago" 
+                            class="form-select form-select-lg" 
+                            required>
+                        <option value="">Seleccione un método</option>
+                        @foreach (var metodo in Model.MetodosPagoDisponibles)
+                        {
+                            <option value="@metodo">@metodo</option>
+                        }
+                    </select>
+                    <span asp-validation-for="MetodoPago" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <label asp-for="ReferenciaPago" class="form-label fw-semibold">
+                        Referencia de pago
+                    </label>
+                    <input asp-for="ReferenciaPago" 
+                           class="form-control" 
+                           placeholder="Número de transacción, referencia, etc." />
+                    <span asp-validation-for="ReferenciaPago" class="text-danger small"></span>
+                    <small class="text-muted">Opcional: número de transacción, referencia bancaria, etc.</small>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Observaciones" class="form-label fw-semibold">
+                        Observaciones
+                    </label>
+                    <textarea asp-for="Observaciones" 
+                              class="form-control" 
+                              rows="3" 
+                              placeholder="Notas adicionales sobre el pago..."></textarea>
+                    <span asp-validation-for="Observaciones" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <!-- Resumen -->
+            <div class="card bg-primary bg-opacity-10 mb-4">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <h6 class="mb-0 fw-semibold">Total a pagar:</h6>
+                        <h4 class="mb-0 fw-bold text-primary" id="totalPagar">
+                            @Model.Monto.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-CO"))
+                        </h4>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones -->
+            <div class="d-flex justify-content-between">
+                <a asp-controller="Parqueadero" asp-action="Index" class="btn btn-light border">
+                    <iconify-icon icon="solar:arrow-left-line-duotone" class="me-1"></iconify-icon>
+                    Cancelar
+                </a>
+                <button type="submit" class="btn btn-success btn-lg">
+                    <iconify-icon icon="solar:wallet-money-line-duotone" class="me-2"></iconify-icon>
+                    Confirmar Pago
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const montoInput = document.getElementById('Monto');
+            const metodoPagoSelect = document.getElementById('MetodoPago');
+            const referenciaInput = document.getElementById('ReferenciaPago');
+            const totalPagar = document.getElementById('totalPagar');
+
+            // Actualizar total cuando cambia el monto
+            montoInput.addEventListener('input', function () {
+                const monto = parseFloat(this.value) || 0;
+                totalPagar.textContent = monto.toLocaleString('es-CO', {
+                    style: 'currency',
+                    currency: 'COP'
+                });
+            });
+
+            // Hacer referencia requerida para algunos métodos
+            metodoPagoSelect.addEventListener('change', function () {
+                const metodo = this.value.toLowerCase();
+                const requiereReferencia = metodo.includes('transferencia') || 
+                                          metodo.includes('nequi') || 
+                                          metodo.includes('daviplata') ||
+                                          metodo.includes('tarjeta');
+                
+                referenciaInput.required = requiereReferencia;
+                if (requiereReferencia && !referenciaInput.value) {
+                    referenciaInput.classList.add('border-warning');
+                } else {
+                    referenciaInput.classList.remove('border-warning');
+                }
+            });
+        })();
+    </script>
+}

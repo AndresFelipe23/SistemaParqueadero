@@ -1,0 +1,450 @@
+@model SistemaParqueaderoWEB.Models.VehiculoHistorialViewModel
+@{
+    ViewData["Title"] = "Historial de Vehículo";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h4 class="fw-semibold mb-1">Historial de Vehículos</h4>
+        <p class="text-muted mb-0">Consulta el historial completo de entradas y salidas</p>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Columna izquierda: Búsqueda y listado de vehículos -->
+    <div class="col-lg-4 col-md-5">
+        <!-- Formulario de búsqueda -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title fw-semibold mb-3">
+                    <iconify-icon icon="solar:magnifer-line-duotone" class="me-2"></iconify-icon>
+                    Buscar por placa
+                </h5>
+                <form asp-action="HistorialVehiculo" method="get" class="row g-3">
+                    <div class="col-12">
+                        <label for="placa" class="form-label">Placa del vehículo</label>
+                        <input type="text"
+                               id="placa"
+                               name="placa"
+                               class="form-control text-uppercase"
+                               value="@Model.PlacaBuscada"
+                               placeholder="Ej: ABC123"
+                               maxlength="10" />
+                    </div>
+                    <div class="col-12 d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <iconify-icon icon="solar:magnifer-line-duotone" class="me-1"></iconify-icon>
+                            Buscar
+                        </button>
+                    </div>
+                </form>
+
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="alert alert-danger mt-3 mb-0">
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <div class="small">@error.ErrorMessage</div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Listado de vehículos registrados -->
+        @if (Model.Vehiculos != null && Model.Vehiculos.Any())
+        {
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h6 class="card-title fw-semibold mb-0">
+                            <iconify-icon icon="solar:car-line-duotone" class="me-2"></iconify-icon>
+                            Vehículos registrados
+                        </h6>
+                        <span class="badge bg-primary rounded-pill">@Model.Vehiculos.Count</span>
+                    </div>
+                    <div class="mb-3">
+                        <input type="text"
+                               id="filtroVehiculos"
+                               class="form-control form-control-sm"
+                               placeholder="🔍 Filtrar por placa o propietario..." />
+                    </div>
+                    <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                        <table class="table table-sm table-hover align-middle mb-0" id="tablaVehiculos">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th class="small fw-semibold">Placa</th>
+                                    <th class="small fw-semibold">Tipo</th>
+                                    <th class="small fw-semibold">Propietario</th>
+                                    <th class="small fw-semibold text-end">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var v in Model.Vehiculos)
+                                {
+                                    <tr class="cursor-pointer" onclick="window.location.href='@Url.Action("HistorialVehiculo", new { placa = v.Placa })'">
+                                        <td>
+                                            <strong class="text-primary">@v.Placa</strong>
+                                        </td>
+                                        <td>
+                                            <span class="badge @(v.TipoVehiculo == SistemaParqueaderoWEB.Models.TipoVehiculo.Carro ? "bg-info" : "bg-warning")">
+                                                @v.TipoVehiculoTexto
+                                            </span>
+                                        </td>
+                                        <td class="small">
+                                            @(v.PropietarioNombre ?? "-")
+                                        </td>
+                                        <td class="text-end">
+                                            <a asp-action="HistorialVehiculo"
+                                               asp-route-placa="@v.Placa"
+                                               class="btn btn-sm btn-outline-primary"
+                                               onclick="event.stopPropagation();">
+                                                <iconify-icon icon="solar:eye-line-duotone"></iconify-icon>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="card">
+                <div class="card-body text-center py-4">
+                    <iconify-icon icon="solar:car-line-duotone" style="font-size: 3rem; color: #ccc;"></iconify-icon>
+                    <p class="text-muted mb-0 mt-2">No hay vehículos registrados</p>
+                </div>
+            </div>
+        }
+
+        <!-- Información del vehículo seleccionado -->
+        @if (Model.Vehiculo != null)
+        {
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h6 class="card-title fw-semibold mb-3">
+                        <iconify-icon icon="solar:car-line-duotone" class="me-2"></iconify-icon>
+                        Información del vehículo
+                    </h6>
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="text-muted small">Placa:</span>
+                            <strong class="text-primary fs-5">@Model.Vehiculo.Placa</strong>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="text-muted small">Tipo:</span>
+                            <span class="badge @(Model.Vehiculo.TipoVehiculo == SistemaParqueaderoWEB.Models.TipoVehiculo.Carro ? "bg-info" : "bg-warning")">
+                                @Model.Vehiculo.TipoVehiculoTexto
+                            </span>
+                        </div>
+                        @if (!string.IsNullOrWhiteSpace(Model.Vehiculo.Marca) || !string.IsNullOrWhiteSpace(Model.Vehiculo.Modelo))
+                        {
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="text-muted small">Marca/Modelo:</span>
+                                <span class="small">@($"{Model.Vehiculo.Marca ?? ""} {Model.Vehiculo.Modelo ?? ""}".Trim())</span>
+                            </div>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(Model.Vehiculo.Color))
+                        {
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="text-muted small">Color:</span>
+                                <span class="small">@Model.Vehiculo.Color</span>
+                            </div>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(Model.Vehiculo.PropietarioNombre))
+                        {
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="text-muted small">Propietario:</span>
+                                <span class="small">@Model.Vehiculo.PropietarioNombre</span>
+                            </div>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(Model.Vehiculo.PropietarioDocumento))
+                        {
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="text-muted small">Documento:</span>
+                                <span class="small">@Model.Vehiculo.PropietarioDocumento</span>
+                            </div>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(Model.Vehiculo.PropietarioTelefono))
+                        {
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="text-muted small">Teléfono:</span>
+                                <span class="small">@Model.Vehiculo.PropietarioTelefono</span>
+                            </div>
+                        }
+                        <hr class="my-3" />
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="text-muted small">Total visitas:</span>
+                            <strong class="text-success">@Model.Vehiculo.TotalVisitas</strong>
+                        </div>
+                        @if (Model.Vehiculo.FechaPrimeraVisita.HasValue)
+                        {
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="text-muted small">Primera visita:</span>
+                                <span class="small">@Model.Vehiculo.FechaPrimeraVisita.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                            </div>
+                        }
+                        @if (Model.Vehiculo.FechaUltimaVisita.HasValue)
+                        {
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="text-muted small">Última visita:</span>
+                                <span class="small">@Model.Vehiculo.FechaUltimaVisita.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                            </div>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(Model.Vehiculo.Observaciones))
+                        {
+                            <hr class="my-3" />
+                            <div>
+                                <span class="text-muted small d-block mb-1">Observaciones:</span>
+                                <p class="small mb-0">@Model.Vehiculo.Observaciones</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Columna derecha: Historial detallado -->
+    <div class="col-lg-8 col-md-7">
+        @if (Model.Registros == null || !Model.Registros.Any())
+        {
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <iconify-icon icon="solar:clipboard-list-line-duotone" style="font-size: 4rem; color: #ccc;"></iconify-icon>
+                    <h5 class="mb-2 mt-3">Sin historial para mostrar</h5>
+                    <p class="text-muted mb-0">
+                        Ingresa una placa válida o selecciona un vehículo de la lista para ver su historial completo.
+                    </p>
+                </div>
+            </div>
+        }
+        else
+        {
+            <!-- Tarjetas de resumen -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card border-top border-top-4 border-top-primary">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <iconify-icon icon="solar:calendar-mark-line-duotone" style="font-size: 2rem; color: #258cfb;"></iconify-icon>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <p class="mb-1 text-muted small">Total visitas</p>
+                                    <h4 class="mb-0 fw-semibold">@Model.TotalVisitas</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-top border-top-4 border-top-success">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <iconify-icon icon="solar:dollar-minimalistic-line-duotone" style="font-size: 2rem; color: #10b759;"></iconify-icon>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <p class="mb-1 text-muted small">Total recaudado</p>
+                                    <h4 class="mb-0 fw-semibold text-success">
+                                        @Model.TotalRecaudado.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-CO"))
+                                    </h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-top border-top-4 border-top-info">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <iconify-icon icon="solar:clock-circle-line-duotone" style="font-size: 2rem; color: #06b6d4;"></iconify-icon>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <p class="mb-1 text-muted small">Tiempo total</p>
+                                    <h5 class="mb-0 fw-semibold">
+                                        @(Model.TiempoTotalParqueado.Days > 0 ? $"{Model.TiempoTotalParqueado.Days}d " : "")
+                                        @Model.TiempoTotalParqueado.Hours h @Model.TiempoTotalParqueado.Minutes m
+                                    </h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla de historial -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h5 class="card-title fw-semibold mb-0">
+                            <iconify-icon icon="solar:clipboard-list-line-duotone" class="me-2"></iconify-icon>
+                            Historial de entradas y salidas
+                        </h5>
+                        <span class="badge bg-primary rounded-pill">@Model.Registros.Count registro(s)</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table align-middle table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="fw-semibold">Ticket</th>
+                                    <th class="fw-semibold">Entrada</th>
+                                    <th class="fw-semibold">Salida</th>
+                                    <th class="fw-semibold">Tiempo</th>
+                                    <th class="fw-semibold">Monto</th>
+                                    <th class="fw-semibold">Usuario</th>
+                                    <th class="fw-semibold">Observaciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var r in Model.Registros)
+                                {
+                                    var tiempo = r.TiempoParqueado ?? TimeSpan.Zero;
+                                    var monto = r.MontoFinal ?? r.MontoTotal ?? 0;
+                                    var estaActivo = r.Activo;
+                                    <tr class="@(estaActivo ? "table-warning" : "")">
+                                        <td>
+                                            <span class="badge bg-secondary">#@r.Id</span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <iconify-icon icon="solar:login-2-line-duotone" class="me-1 text-success"></iconify-icon>
+                                                <span class="small">@r.FechaEntrada.ToString("dd/MM/yyyy")</span>
+                                            </div>
+                                            <span class="text-muted small">@r.FechaEntrada.ToString("HH:mm")</span>
+                                        </td>
+                                        <td>
+                                            @if (r.FechaSalida.HasValue)
+                                            {
+                                                <div class="d-flex align-items-center">
+                                                    <iconify-icon icon="solar:logout-2-line-duotone" class="me-1 text-danger"></iconify-icon>
+                                                    <span class="small">@r.FechaSalida.Value.ToString("dd/MM/yyyy")</span>
+                                                </div>
+                                                <span class="text-muted small">@r.FechaSalida.Value.ToString("HH:mm")</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-warning">Activo</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (tiempo.TotalMinutes > 0)
+                                            {
+                                                <span class="small">
+                                                    @if (tiempo.Days > 0)
+                                                    {
+                                                        <span>@tiempo.Days d </span>
+                                                    }
+                                                    @tiempo.Hours h @tiempo.Minutes m
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted small">-</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (monto > 0)
+                                            {
+                                                <strong class="text-success">
+                                                    @monto.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-CO"))
+                                                </strong>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted small">-</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="small">
+                                                @if (r.UsuarioEntrada != null)
+                                                {
+                                                    <div class="mb-1">
+                                                        <iconify-icon icon="solar:user-line-duotone" class="me-1"></iconify-icon>
+                                                        <span class="text-muted">Ent:</span> @r.UsuarioEntrada.UsuarioNombre
+                                                    </div>
+                                                }
+                                                @if (r.UsuarioSalida != null)
+                                                {
+                                                    <div>
+                                                        <iconify-icon icon="solar:user-line-duotone" class="me-1"></iconify-icon>
+                                                        <span class="text-muted">Sal:</span> @r.UsuarioSalida.UsuarioNombre
+                                                    </div>
+                                                }
+                                            </div>
+                                        </td>
+                                        <td style="max-width: 200px;">
+                                            <div class="small">
+                                                @if (!string.IsNullOrWhiteSpace(r.ObservacionesEntrada))
+                                                {
+                                                    <div class="mb-1">
+                                                        <span class="badge bg-info-subtle text-info">Ent:</span>
+                                                        <span class="text-muted">@r.ObservacionesEntrada</span>
+                                                    </div>
+                                                }
+                                                @if (!string.IsNullOrWhiteSpace(r.ObservacionesSalida))
+                                                {
+                                                    <div>
+                                                        <span class="badge bg-danger-subtle text-danger">Sal:</span>
+                                                        <span class="text-muted">@r.ObservacionesSalida</span>
+                                                    </div>
+                                                }
+                                                @if (string.IsNullOrWhiteSpace(r.ObservacionesEntrada) && string.IsNullOrWhiteSpace(r.ObservacionesSalida))
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const input = document.getElementById('filtroVehiculos');
+            const tabla = document.getElementById('tablaVehiculos');
+            if (!input || !tabla) return;
+
+            input.addEventListener('input', function () {
+                const filtro = this.value.toLowerCase();
+                const filas = tabla.querySelectorAll('tbody tr');
+                let visibleCount = 0;
+                
+                filas.forEach(function (fila) {
+                    const texto = fila.textContent.toLowerCase();
+                    const mostrar = texto.includes(filtro);
+                    fila.style.display = mostrar ? '' : 'none';
+                    if (mostrar) visibleCount++;
+                });
+
+                // Mostrar mensaje si no hay resultados
+                const tbody = tabla.querySelector('tbody');
+                let noResultsRow = tbody.querySelector('tr.no-results');
+                if (visibleCount === 0 && filtro !== '') {
+                    if (!noResultsRow) {
+                        noResultsRow = document.createElement('tr');
+                        noResultsRow.className = 'no-results';
+                        noResultsRow.innerHTML = '<td colspan="4" class="text-center text-muted py-3">No se encontraron vehículos</td>';
+                        tbody.appendChild(noResultsRow);
+                    }
+                    noResultsRow.style.display = '';
+                } else if (noResultsRow) {
+                    noResultsRow.style.display = 'none';
+                }
+            });
+        })();
+    </script>
+}

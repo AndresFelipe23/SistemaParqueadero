@@ -1,0 +1,236 @@
+@model SistemaParqueaderoWEB.Models.CierreCaja
+@{
+    ViewData["Title"] = "Detalle de Cierre";
+    var registros = ViewBag.Registros as List<SistemaParqueaderoWEB.Models.RegistroParqueo> ?? new List<SistemaParqueaderoWEB.Models.RegistroParqueo>();
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h4 class="fw-semibold mb-1">Detalle de Cierre de Caja</h4>
+        <p class="text-muted mb-0">@Model.FechaCierre.ToString("dddd, dd 'de' MMMM 'de' yyyy", new System.Globalization.CultureInfo("es-CO"))</p>
+    </div>
+    <div>
+        <a asp-action="Historial" class="btn btn-light border me-2">
+            <iconify-icon icon="solar:arrow-left-line-duotone" class="me-1"></iconify-icon>
+            Volver al historial
+        </a>
+        <a asp-action="Index" class="btn btn-light border">
+            <iconify-icon icon="solar:home-angle-line-duotone" class="me-1"></iconify-icon>
+            Inicio
+        </a>
+    </div>
+</div>
+
+<!-- Información del cierre -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card border-top border-top-4 border-top-primary">
+            <div class="card-body">
+                <p class="mb-1 text-muted small">Fecha de cierre</p>
+                <h6 class="mb-0 fw-semibold">@Model.FechaCierreReal.ToString("dd/MM/yyyy HH:mm")</h6>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-top border-top-4 border-top-info">
+            <div class="card-body">
+                <p class="mb-1 text-muted small">Usuario</p>
+                <h6 class="mb-0 fw-semibold">@(Model.Usuario?.NombreCompleto ?? "-")</h6>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-top border-top-4 border-top-success">
+            <div class="card-body">
+                <p class="mb-1 text-muted small">Monto total</p>
+                <h5 class="mb-0 fw-semibold text-success">
+                    @Model.MontoTotal.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-CO"))
+                </h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-top border-top-4 @(Model.Diferencia >= 0 ? "border-top-success" : "border-top-danger")">
+            <div class="card-body">
+                <p class="mb-1 text-muted small">Diferencia</p>
+                <h5 class="mb-0 fw-semibold @(Model.Diferencia >= 0 ? "text-success" : "text-danger")">
+                    @(Model.Diferencia?.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-CO")) ?? "$0.00")
+                </h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Resumen por método de pago -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="mb-1 text-muted small">Efectivo</p>
+                        <h5 class="mb-0 fw-semibold text-success">
+                            @Model.MontoEfectivo.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-CO"))
+                        </h5>
+                    </div>
+                    <iconify-icon icon="solar:wallet-money-line-duotone" style="font-size: 2rem; color: #10b759;"></iconify-icon>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="mb-1 text-muted small">Tarjeta</p>
+                        <h5 class="mb-0 fw-semibold text-info">
+                            @Model.MontoTarjeta.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-CO"))
+                        </h5>
+                    </div>
+                    <iconify-icon icon="solar:card-line-duotone" style="font-size: 2rem; color: #06b6d4;"></iconify-icon>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="mb-1 text-muted small">Transferencia</p>
+                        <h5 class="mb-0 fw-semibold text-primary">
+                            @Model.MontoTransferencia.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-CO"))
+                        </h5>
+                    </div>
+                    <iconify-icon icon="solar:transfer-horizontal-line-duotone" style="font-size: 2rem; color: #258cfb;"></iconify-icon>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estadísticas -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <p class="mb-1 text-muted small">Total registros</p>
+                <h3 class="mb-0 fw-semibold">@Model.TotalRegistros</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <p class="mb-1 text-muted small">Carros</p>
+                <h3 class="mb-0 fw-semibold text-info">@Model.TotalCarros</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <p class="mb-1 text-muted small">Motos</p>
+                <h3 class="mb-0 fw-semibold text-warning">@Model.TotalMotos</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.Observaciones))
+{
+    <div class="card mb-4">
+        <div class="card-body">
+            <h6 class="fw-semibold mb-2">Observaciones</h6>
+            <p class="mb-0">@Model.Observaciones</p>
+        </div>
+    </div>
+}
+
+<!-- Registros del día -->
+<div class="card">
+    <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <h5 class="card-title fw-semibold mb-0">
+                <iconify-icon icon="solar:clipboard-list-line-duotone" class="me-2"></iconify-icon>
+                Registros del día (@registros.Count)
+            </h5>
+        </div>
+        @if (registros.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="fw-semibold">Ticket</th>
+                            <th class="fw-semibold">Placa</th>
+                            <th class="fw-semibold">Tipo</th>
+                            <th class="fw-semibold">Entrada</th>
+                            <th class="fw-semibold">Salida</th>
+                            <th class="fw-semibold">Tiempo</th>
+                            <th class="fw-semibold">Monto</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var registro in registros)
+                        {
+                            var tiempo = registro.TiempoParqueado ?? TimeSpan.Zero;
+                            <tr>
+                                <td><span class="badge bg-secondary">#@registro.Id</span></td>
+                                <td><strong>@registro.Placa</strong></td>
+                                <td>
+                                    <span class="badge @(registro.TipoVehiculo == SistemaParqueaderoWEB.Models.TipoVehiculo.Carro ? "bg-info" : "bg-warning")">
+                                        @registro.TipoVehiculoTexto
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="small">@registro.FechaEntrada.ToString("dd/MM/yyyy")</div>
+                                    <div class="text-muted small">@registro.FechaEntrada.ToString("HH:mm")</div>
+                                </td>
+                                <td>
+                                    @if (registro.FechaSalida.HasValue)
+                                    {
+                                        <div class="small">@registro.FechaSalida.Value.ToString("dd/MM/yyyy")</div>
+                                        <div class="text-muted small">@registro.FechaSalida.Value.ToString("HH:mm")</div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (tiempo.TotalMinutes > 0)
+                                    {
+                                        <span class="small">
+                                            @if (tiempo.Days > 0)
+                                            {
+                                                <span>@tiempo.Days d </span>
+                                            }
+                                            @tiempo.Hours h @tiempo.Minutes m
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    <strong class="text-success">
+                                        @((registro.MontoFinal ?? registro.MontoTotal ?? 0).ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-CO")))
+                                    </strong>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-4">
+                <p class="text-muted mb-0">No hay registros para este día.</p>
+            </div>
+        }
+    </div>
+</div>

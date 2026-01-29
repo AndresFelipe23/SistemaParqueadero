@@ -1,0 +1,71 @@
+@model SistemaParqueaderoWEB.Models.Configuracion
+@{
+    ViewData["Title"] = "Eliminar Configuración";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h4 class="fw-semibold mb-1">Eliminar Configuración</h4>
+        <p class="text-muted mb-0">Confirme la eliminación de la configuración</p>
+    </div>
+    <a asp-action="Index" class="btn btn-light border">
+        <iconify-icon icon="solar:arrow-left-line-duotone" class="me-1"></iconify-icon>
+        Volver
+    </a>
+</div>
+
+<div class="alert alert-warning">
+    <iconify-icon icon="solar:danger-triangle-line-duotone" class="me-2"></iconify-icon>
+    <strong>Advertencia:</strong> Esta acción no se puede deshacer. ¿Está seguro de que desea eliminar esta configuración?
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title fw-semibold mb-3">Información de la configuración</h5>
+        <dl class="row">
+            <dt class="col-sm-3">Clave:</dt>
+            <dd class="col-sm-9"><strong class="text-primary">@Model.Clave</strong></dd>
+
+            <dt class="col-sm-3">Valor:</dt>
+            <dd class="col-sm-9"><code>@Model.Valor</code></dd>
+
+            <dt class="col-sm-3">Tipo:</dt>
+            <dd class="col-sm-9"><span class="badge bg-info">@(Model.Tipo ?? "String")</span></dd>
+
+            @if (!string.IsNullOrWhiteSpace(Model.Descripcion))
+            {
+                <dt class="col-sm-3">Descripción:</dt>
+                <dd class="col-sm-9">@Model.Descripcion</dd>
+            }
+
+            <dt class="col-sm-3">Fecha de creación:</dt>
+            <dd class="col-sm-9">@Model.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</dd>
+
+            @if (Model.FechaActualizacion.HasValue)
+            {
+                <dt class="col-sm-3">Última actualización:</dt>
+                <dd class="col-sm-9">
+                    @Model.FechaActualizacion.Value.ToString("dd/MM/yyyy HH:mm")
+                    @if (Model.UsuarioActualizacion != null)
+                    {
+                        <span class="text-muted">por @Model.UsuarioActualizacion.NombreCompleto</span>
+                    }
+                </dd>
+            }
+        </dl>
+
+        <form asp-action="Eliminar" method="post">
+            <input type="hidden" asp-for="Id" />
+            <div class="d-flex justify-content-between">
+                <a asp-action="Index" class="btn btn-light border">
+                    <iconify-icon icon="solar:arrow-left-line-duotone" class="me-1"></iconify-icon>
+                    Cancelar
+                </a>
+                <button type="submit" class="btn btn-danger">
+                    <iconify-icon icon="solar:trash-bin-minimalistic-line-duotone" class="me-2"></iconify-icon>
+                    Confirmar Eliminación
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

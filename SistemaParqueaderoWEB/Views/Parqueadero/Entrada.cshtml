@@ -3,62 +3,92 @@
     ViewData["Title"] = "Registrar Entrada";
 }
 
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow">
-                <div class="card-header bg-success text-white">
-                    <h3 class="mb-0">🚗 Registrar Entrada de Vehículo</h3>
+<div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+        <div class="card card-hover">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center me-3" style="width:48px;height:48px;">
+                        <iconify-icon icon="solar:car-line-duotone" class="fs-5"></iconify-icon>
+                    </div>
+                    <div>
+                        <h3 class="mb-0">Registrar Entrada de Vehículo</h3>
+                        <p class="mb-0 text-muted">Capture los datos del vehículo que ingresa al parqueadero</p>
+                    </div>
                 </div>
-                <div class="card-body">
-                    @if (TempData["Mensaje"] != null)
-                    {
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            @TempData["Mensaje"]
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    }
 
-                    <form asp-action="Entrada" method="post" id="formEntrada">
-                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                @if (TempData["Mensaje"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        @TempData["Mensaje"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
 
-                        <div class="mb-3">
-                            <label for="placa" class="form-label">Placa del Vehículo *</label>
-                            <input type="text" class="form-control form-control-lg" id="placa" name="placa" 
-                                   placeholder="Ej: ABC123" required autofocus maxlength="10" 
-                                   style="text-transform: uppercase;" />
-                            <small class="form-text text-muted">Ingrese la placa del vehículo</small>
-                        </div>
+                <form asp-action="Entrada" method="post" id="formEntrada" class="mt-3">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-                        <div class="mb-3">
-                            <label for="tipoVehiculo" class="form-label">Tipo de Vehículo *</label>
-                            <select class="form-select form-select-lg" id="tipoVehiculo" name="tipoVehiculo" required>
-                                <option value="">Seleccione...</option>
-                                <option value="1">🚗 Carro</option>
-                                <option value="2">🏍️ Moto</option>
-                            </select>
-                        </div>
+                    <div class="mb-3">
+                        <label for="placa" class="form-label">Placa del Vehículo <span class="text-danger">*</span></label>
+                        <input type="text"
+                               class="form-control form-control-lg"
+                               id="placa"
+                               name="placa"
+                               placeholder="Ej: ABC123"
+                               required
+                               autofocus
+                               maxlength="10"
+                               style="text-transform: uppercase;" />
+                        <small class="form-text text-muted">Solo la placa es obligatoria junto con el tipo de vehículo.</small>
+                    </div>
 
-                        <div class="mb-3">
-                            <label for="codigoBarras" class="form-label">Código de Barras/QR (Opcional)</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control form-control-lg" id="codigoBarras" 
-                                       name="codigoBarras" placeholder="Escaneé o ingrese el código" />
-                                <button type="button" class="btn btn-outline-secondary" id="btnEscanear">
-                                    📷 Escanear
-                                </button>
-                            </div>
-                            <small class="form-text text-muted">Si no se proporciona, se generará automáticamente</small>
-                        </div>
+                    <div class="mb-3">
+                        <label for="tipoVehiculo" class="form-label">Tipo de Vehículo <span class="text-danger">*</span></label>
+                        <select class="form-select form-select-lg" id="tipoVehiculo" name="tipoVehiculo" required>
+                            <option value="">Seleccione...</option>
+                            <option value="1">Carro</option>
+                            <option value="2">Moto</option>
+                        </select>
+                        <small class="form-text text-muted">Selecciona el tipo para aplicar la tarifa correcta.</small>
+                    </div>
 
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-success btn-lg">
-                                <i class="bi bi-check-circle"></i> Registrar Entrada
+                    <div class="mb-3">
+                        <label for="codigoBarras" class="form-label">Código de Barras/QR (Opcional)</label>
+                        <div class="input-group">
+                            <input type="text"
+                                   class="form-control form-control-lg"
+                                   id="codigoBarras"
+                                   name="codigoBarras"
+                                   placeholder="Escanee o ingrese el código (si aplica)" />
+                            <button type="button" class="btn btn-outline-secondary d-flex align-items-center gap-1" id="btnEscanear">
+                                <iconify-icon icon="solar:camera-line-duotone"></iconify-icon>
+                                <span>Escanear</span>
                             </button>
-                            <a asp-action="Index" class="btn btn-secondary btn-lg">Cancelar</a>
                         </div>
-                    </form>
-                </div>
+                        <small class="form-text text-muted">Si lo dejas vacío, el sistema generará un código automáticamente.</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="observacionesEntrada" class="form-label">Observaciones (Opcional)</label>
+                        <textarea class="form-control"
+                                  id="observacionesEntrada"
+                                  name="observacionesEntrada"
+                                  rows="3"
+                                  placeholder="Ej: Daño en parachoques, vehículo oficial, etc."></textarea>
+                        <small class="form-text text-muted">Solo completa este campo si necesitas anotar algo especial del vehículo.</small>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <iconify-icon icon="solar:check-circle-line-duotone" class="me-1"></iconify-icon>
+                            Registrar Entrada
+                        </button>
+                        <a asp-action="Index" class="btn btn-light btn-lg border">
+                            <iconify-icon icon="solar:arrow-left-line-duotone" class="me-1"></iconify-icon>
+                            Cancelar
+                        </a>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

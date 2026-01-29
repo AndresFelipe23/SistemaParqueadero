@@ -1,5 +1,9 @@
 html {
   font-size: 14px;
+  position: relative;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 @media (min-width: 768px) {
@@ -8,15 +12,32 @@ html {
   }
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+body {
+  margin: 0;
+  padding: 0;
+  margin-bottom: 60px;
+}
+
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
   box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
-html {
-  position: relative;
-  min-height: 100%;
+/* Asegurar que el header MatDash quede pegado arriba */
+.app-header {
+  top: 0 !important;
 }
 
-body {
-  margin-bottom: 60px;
+/* Ajustar el margen superior del contenido MatDash para que quede justo debajo del header,
+   sin que el navbar se superponga a las tarjetas */
+.body-wrapper .body-wrapper-inner {
+  margin-top: 90px !important;
+}
+
+/* Asegurar que el sidebar MatDash quede pegado arriba */
+#main-wrapper[data-sidebar-position=fixed] .left-sidebar {
+  top: 0 !important;
 }

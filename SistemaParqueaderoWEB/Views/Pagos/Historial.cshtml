@@ -1,0 +1,184 @@
+@model SistemaParqueaderoWEB.Models.PagoHistorialViewModel
+@{
+    ViewData["Title"] = "Historial de Pagos";
+    var fechaDesde = ViewBag.FechaDesde as DateTime?;
+    var fechaHasta = ViewBag.FechaHasta as DateTime?;
+    var metodoPago = ViewBag.MetodoPago as string;
+    var estadoPago = ViewBag.EstadoPago as string;
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h4 class="fw-semibold mb-1">Historial de Pagos</h4>
+        <p class="text-muted mb-0">Consulta todos los pagos registrados</p>
+    </div>
+    <a asp-controller="Parqueadero" asp-action="Index" class="btn btn-light border">
+        <iconify-icon icon="solar:arrow-left-line-duotone" class="me-1"></iconify-icon>
+        Volver
+    </a>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label for="fechaDesde" class="form-label small text-muted">Fecha desde</label>
+                <input type="date" 
+                       id="fechaDesde" 
+                       name="fechaDesde" 
+                       class="form-control form-control-sm" 
+                       value="@(fechaDesde?.ToString("yyyy-MM-dd"))" />
+            </div>
+            <div class="col-md-3">
+                <label for="fechaHasta" class="form-label small text-muted">Fecha hasta</label>
+                <input type="date" 
+                       id="fechaHasta" 
+                       name="fechaHasta" 
+                       class="form-control form-control-sm" 
+                       value="@(fechaHasta?.ToString("yyyy-MM-dd"))" />
+            </div>
+            <div class="col-md-2">
+                <label for="metodoPago" class="form-label small text-muted">Método</label>
+                <select id="metodoPago" name="metodoPago" class="form-select form-select-sm">
+                    <option value="">Todos</option>
+                    @foreach (var metodo in Model.MetodosPagoDisponibles)
+                    {
+                        <option value="@metodo" selected="@(metodo == metodoPago)">@metodo</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="estadoPago" class="form-label small text-muted">Estado</label>
+                <select id="estadoPago" name="estadoPago" class="form-select form-select-sm">
+                    <option value="">Todos</option>
+                    <option value="Completado" selected="@("Completado" == estadoPago)">Completado</option>
+                    <option value="Pendiente" selected="@("Pendiente" == estadoPago)">Pendiente</option>
+                    <option value="Cancelado" selected="@("Cancelado" == estadoPago)">Cancelado</option>
+                    <option value="Reembolsado" selected="@("Reembolsado" == estadoPago)">Reembolsado</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary btn-sm me-2">
+                    <iconify-icon icon="solar:magnifer-line-duotone" class="me-1"></iconify-icon>
+                    Buscar
+                </button>
+                <a asp-action="Historial" class="btn btn-outline-secondary btn-sm">
+                    Limpiar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Resumen -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card border-top border-top-4 border-top-primary">
+            <div class="card-body">
+                <p class="mb-1 text-muted small">Total pagos</p>
+                <h4 class="mb-0 fw-semibold">@Model.TotalPagos</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-top border-top-4 border-top-success">
+            <div class="card-body">
+                <p class="mb-1 text-muted small">Total recaudado</p>
+                <h4 class="mb-0 fw-semibold text-success">
+                    @Model.TotalRecaudado.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-CO"))
+                </h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-top border-top-4 border-top-info">
+            <div class="card-body">
+                <p class="mb-1 text-muted small">Promedio por pago</p>
+                <h4 class="mb-0 fw-semibold">
+                    @(Model.TotalPagos > 0 ? (Model.TotalRecaudado / Model.TotalPagos).ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-CO")) : "$0.00")
+                </h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (!Model.Pagos.Any())
+{
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <iconify-icon icon="solar:wallet-money-line-duotone" style="font-size: 4rem; color: #ccc;"></iconify-icon>
+            <h5 class="mb-2 mt-3">No hay pagos registrados</h5>
+            <p class="text-muted mb-0">
+                No se encontraron pagos para los filtros seleccionados.
+            </p>
+        </div>
+    </div>
+}
+else
+{
+    <!-- Tabla de pagos -->
+    <div class="card">
+        <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <h5 class="card-title fw-semibold mb-0">
+                    <iconify-icon icon="solar:wallet-money-line-duotone" class="me-2"></iconify-icon>
+                    Listado de pagos
+                </h5>
+                <span class="badge bg-primary rounded-pill">@Model.Pagos.Count pago(s)</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="fw-semibold">ID</th>
+                            <th class="fw-semibold">Fecha</th>
+                            <th class="fw-semibold">Placa</th>
+                            <th class="fw-semibold">Método</th>
+                            <th class="fw-semibold">Monto</th>
+                            <th class="fw-semibold">Estado</th>
+                            <th class="fw-semibold">Usuario</th>
+                            <th class="fw-semibold text-end">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var pago in Model.Pagos)
+                        {
+                            <tr>
+                                <td><span class="badge bg-secondary">#@pago.Id</span></td>
+                                <td>
+                                    <div class="small">@pago.FechaPago.ToString("dd/MM/yyyy")</div>
+                                    <div class="text-muted small">@pago.FechaPago.ToString("HH:mm:ss")</div>
+                                </td>
+                                <td>
+                                    <strong class="text-primary">@pago.RegistroParqueo.Placa</strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">@pago.MetodoPago</span>
+                                </td>
+                                <td>
+                                    <strong class="text-success">
+                                        @pago.Monto.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-CO"))
+                                    </strong>
+                                </td>
+                                <td>
+                                    <span class="badge @(pago.EstadoPago == "Completado" ? "bg-success" : pago.EstadoPago == "Pendiente" ? "bg-warning" : "bg-danger")">
+                                        @pago.EstadoPago
+                                    </span>
+                                </td>
+                                <td>
+                                    <small>@(pago.UsuarioPago?.NombreCompleto ?? "-")</small>
+                                </td>
+                                <td class="text-end">
+                                    <a asp-action="DetallePago" asp-route-id="@pago.Id" class="btn btn-sm btn-outline-primary">
+                                        <iconify-icon icon="solar:eye-line-duotone"></iconify-icon>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}

@@ -1,67 +1,328 @@
+@model SistemaParqueaderoWEB.Models.DashboardViewModel
 @{
-    ViewData["Title"] = "Sistema de Parqueadero";
+    ViewData["Title"] = "Dashboard";
+    var culture = new System.Globalization.CultureInfo("es-CO");
 }
 
-<div class="text-center mb-5">
-    <h1 class="display-4">🚗 Sistema de Parqueadero</h1>
-    <p class="lead">Montería, Colombia</p>
-</div>
-
+<!-- Tarjetas de Resumen -->
 <div class="row">
-    <div class="col-md-6 mb-4">
-        <div class="card h-100 shadow-sm">
-            <div class="card-body text-center">
-                <div class="mb-3">
-                    <i class="bi bi-arrow-right-circle" style="font-size: 4rem; color: #28a745;"></i>
+    <div class="col-lg-3 col-md-6">
+        <div class="card overflow-hidden">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center">
+                    <div class="round-48 d-flex align-items-center justify-content-center rounded bg-primary-subtle">
+                        <iconify-icon icon="solar:car-line-duotone" class="fs-6 text-primary"></iconify-icon>
+                    </div>
+                    <div class="ms-3">
+                        <h6 class="mb-0 fw-semibold">Vehículos Activos</h6>
+                        <h3 class="mb-0 mt-2">@Model.VehiculosActivos</h3>
+                        <span class="fs-2 text-muted">
+                            <span class="text-success">@Model.CarrosActivos</span> carros / 
+                            <span class="text-info">@Model.MotosActivas</span> motos
+                        </span>
+                    </div>
                 </div>
-                <h3 class="card-title">Registrar Entrada</h3>
-                <p class="card-text">Registra la entrada de un vehículo al parqueadero</p>
-                <a asp-action="Entrada" class="btn btn-success btn-lg">
-                    <i class="bi bi-plus-circle"></i> Nueva Entrada
-                </a>
             </div>
         </div>
     </div>
-    <div class="col-md-6 mb-4">
-        <div class="card h-100 shadow-sm">
-            <div class="card-body text-center">
-                <div class="mb-3">
-                    <i class="bi bi-arrow-left-circle" style="font-size: 4rem; color: #dc3545;"></i>
+    <div class="col-lg-3 col-md-6">
+        <div class="card overflow-hidden">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center">
+                    <div class="round-48 d-flex align-items-center justify-content-center rounded bg-success-subtle">
+                        <iconify-icon icon="solar:wallet-money-line-duotone" class="fs-6 text-success"></iconify-icon>
+                    </div>
+                    <div class="ms-3">
+                        <h6 class="mb-0 fw-semibold">Ingresos Hoy</h6>
+                        <h3 class="mb-0 mt-2">@Model.IngresosHoy.ToString("C", culture)</h3>
+                        <span class="fs-2 text-muted">@Model.RegistrosHoy registros</span>
+                    </div>
                 </div>
-                <h3 class="card-title">Registrar Salida</h3>
-                <p class="card-text">Registra la salida de un vehículo y calcula el monto</p>
-                <a asp-action="Salida" class="btn btn-danger btn-lg">
-                    <i class="bi bi-x-circle"></i> Nueva Salida
-                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card overflow-hidden">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center">
+                    <div class="round-48 d-flex align-items-center justify-content-center rounded bg-info-subtle">
+                        <iconify-icon icon="solar:chart-line-duotone" class="fs-6 text-info"></iconify-icon>
+                    </div>
+                    <div class="ms-3">
+                        <h6 class="mb-0 fw-semibold">Ingresos del Mes</h6>
+                        <h3 class="mb-0 mt-2">@Model.IngresosMes.ToString("C", culture)</h3>
+                        <span class="fs-2 text-muted">@DateTime.Now.ToString("MMMM yyyy", culture)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="card overflow-hidden">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center">
+                    <div class="round-48 d-flex align-items-center justify-content-center rounded bg-warning-subtle">
+                        <iconify-icon icon="solar:file-text-line-duotone" class="fs-6 text-warning"></iconify-icon>
+                    </div>
+                    <div class="ms-3">
+                        <h6 class="mb-0 fw-semibold">Pagos Pendientes</h6>
+                        <h3 class="mb-0 mt-2">@Model.PagosPendientes</h3>
+                        <span class="fs-2 text-muted">@Model.MontoPendiente.ToString("C", culture)</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="row mt-4">
-    <div class="col-md-12">
-        <div class="card shadow-sm">
-            <div class="card-body text-center">
-                <h4 class="card-title">Vehículos Actualmente en el Parqueadero</h4>
-                <a asp-action="VehiculosActivos" class="btn btn-primary btn-lg">
-                    <i class="bi bi-list-ul"></i> Ver Vehículos Activos
-                </a>
+<!-- Gráfico de Ingresos y Estadísticas -->
+<div class="row">
+    <div class="col-lg-8 d-flex align-items-stretch">
+        <div class="card w-100">
+            <div class="card-body">
+                <div class="d-sm-flex d-block align-items-center justify-content-between mb-9">
+                    <div class="mb-3 mb-sm-0">
+                        <h5 class="card-title fw-semibold">Ingresos Últimos 7 Días</h5>
+                    </div>
+                </div>
+                <div id="ingresos-chart"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center gap-6 mb-4 pb-3">
+                            <span class="round-48 d-flex align-items-center justify-content-center rounded bg-primary-subtle">
+                                <iconify-icon icon="solar:car-line-duotone" class="fs-6 text-primary"></iconify-icon>
+                            </span>
+                            <h6 class="mb-0 fs-4">Registros Hoy</h6>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between mb-6">
+                            <h6 class="mb-0 fw-medium">Carros</h6>
+                            <h6 class="mb-0 fw-medium">@Model.TotalCarrosHoy</h6>
+                        </div>
+                        <div class="progress mb-4" role="progressbar" aria-valuenow="@(Model.TotalCarrosHoy + Model.TotalMotosHoy > 0 ? (Model.TotalCarrosHoy * 100 / (Model.TotalCarrosHoy + Model.TotalMotosHoy)) : 0)" aria-valuemin="0" aria-valuemax="100" style="height: 7px;">
+                            <div class="progress-bar bg-primary" style="width: @(Model.TotalCarrosHoy + Model.TotalMotosHoy > 0 ? (Model.TotalCarrosHoy * 100 / (Model.TotalCarrosHoy + Model.TotalMotosHoy)) : 0)%"></div>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between mb-6">
+                            <h6 class="mb-0 fw-medium">Motos</h6>
+                            <h6 class="mb-0 fw-medium">@Model.TotalMotosHoy</h6>
+                        </div>
+                        <div class="progress" role="progressbar" aria-valuenow="@(Model.TotalCarrosHoy + Model.TotalMotosHoy > 0 ? (Model.TotalMotosHoy * 100 / (Model.TotalCarrosHoy + Model.TotalMotosHoy)) : 0)" aria-valuemin="0" aria-valuemax="100" style="height: 7px;">
+                            <div class="progress-bar bg-info" style="width: @(Model.TotalCarrosHoy + Model.TotalMotosHoy > 0 ? (Model.TotalMotosHoy * 100 / (Model.TotalCarrosHoy + Model.TotalMotosHoy)) : 0)%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center gap-6 mb-4">
+                            <span class="round-48 d-flex align-items-center justify-content-center rounded bg-success-subtle">
+                                <iconify-icon icon="solar:wallet-money-line-duotone" class="fs-6 text-success"></iconify-icon>
+                            </span>
+                            <h6 class="mb-0 fs-4">Ingresos por Tipo</h6>
+                        </div>
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">Carros</span>
+                                    <h6 class="mb-0">@Model.IngresosCarrosHoy.ToString("C", culture)</h6>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">Motos</span>
+                                    <h6 class="mb-0">@Model.IngresosMotosHoy.ToString("C", culture)</h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<style>
-    .bi {
-        display: inline-block;
-        width: 1em;
-        height: 1em;
-        vertical-align: -.125em;
-    }
-    .card {
-        transition: transform 0.2s;
-    }
-    .card:hover {
-        transform: translateY(-5px);
-    }
-</style>
+<!-- Vehículos Activos Recientes y Actividades -->
+<div class="row">
+    <div class="col-lg-8 d-flex align-items-stretch">
+        <div class="card w-100">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="card-title fw-semibold mb-0">Vehículos Activos Recientes</h5>
+                    <a asp-action="VehiculosActivos" class="btn btn-sm btn-primary">
+                        Ver Todos
+                    </a>
+                </div>
+                @if (Model.VehiculosActivosRecientes.Any())
+                {
+                    <div class="table-responsive" data-simplebar>
+                        <table class="table text-nowrap align-middle table-custom mb-0">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="text-dark fw-normal ps-0">Placa</th>
+                                    <th scope="col" class="text-dark fw-normal">Tipo</th>
+                                    <th scope="col" class="text-dark fw-normal">Tiempo</th>
+                                    <th scope="col" class="text-dark fw-normal">Valor Estimado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var vehiculo in Model.VehiculosActivosRecientes)
+                                {
+                                    var tiempo = DateTime.Now - vehiculo.Registro.FechaEntrada;
+                                    <tr>
+                                        <td class="ps-0">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <iconify-icon icon="solar:car-line-duotone" class="fs-5 text-primary"></iconify-icon>
+                                                <div>
+                                                    <h6 class="mb-0">@vehiculo.Registro.Placa</h6>
+                                                    <span class="text-muted fs-2">@vehiculo.Registro.FechaEntrada.ToString("HH:mm", culture)</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge @(vehiculo.Registro.TipoVehiculo == TipoVehiculo.Carro ? "bg-primary-subtle text-primary" : "bg-info-subtle text-info")">
+                                                @vehiculo.Registro.TipoVehiculoTexto
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span>@tiempo.Hours h @tiempo.Minutes m</span>
+                                        </td>
+                                        <td>
+                                            <span class="text-dark fw-semibold">@vehiculo.MontoEstimado.ToString("C", culture)</span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5">
+                        <iconify-icon icon="solar:car-line-duotone" class="fs-1 text-muted"></iconify-icon>
+                        <p class="text-muted mt-3">No hay vehículos activos</p>
+                        <a asp-action="Entrada" class="btn btn-primary">Registrar Entrada</a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 d-flex align-items-stretch">
+        <div class="card w-100">
+            <div class="card-body p-4">
+                <div class="mb-4">
+                    <h5 class="card-title fw-semibold">Actividades Recientes</h5>
+                </div>
+                @if (Model.ActividadesRecientes.Any())
+                {
+                    <ul class="timeline-widget mb-0 position-relative mb-n5">
+                        @foreach (var actividad in Model.ActividadesRecientes.Take(8))
+                        {
+                            var color = actividad.Tipo == "Entrada" ? "primary" : "success";
+                            <li class="timeline-item d-flex position-relative overflow-hidden">
+                                <div class="timeline-time mt-n1 text-muted flex-shrink-0 text-end" style="width: 60px;">
+                                    @actividad.Fecha.ToString("HH:mm", culture)
+                                </div>
+                                <div class="timeline-badge-wrap d-flex flex-column align-items-center">
+                                    <span class="timeline-badge bg-@color flex-shrink-0 mt-2"></span>
+                                    <span class="timeline-badge-border d-block flex-shrink-0"></span>
+                                </div>
+                                <div class="timeline-desc fs-3 text-dark mt-n1">
+                                    <strong>@actividad.Tipo</strong> - @actividad.Placa
+                                    <br>
+                                    <small class="text-muted">@actividad.TipoVehiculo</small>
+                                    @if (actividad.Monto.HasValue)
+                                    {
+                                        <br>
+                                        <small class="text-success fw-semibold">@actividad.Monto.Value.ToString("C", culture)</small>
+                                    }
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <div class="text-center py-5">
+                        <iconify-icon icon="solar:history-line-duotone" class="fs-1 text-muted"></iconify-icon>
+                        <p class="text-muted mt-3">No hay actividades recientes</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/matdash/libs/apexcharts/dist/apexcharts.min.js"></script>
+    <script>
+        // Gráfico de ingresos últimos 7 días
+        var ingresosData = @Html.Raw(Json.Serialize(Model.IngresosUltimos7Dias.Select(i => new { 
+            fecha = i.Fecha.ToString("dd/MM"), 
+            ingreso = i.Ingreso 
+        })));
+
+        var options = {
+            series: [{
+                name: 'Ingresos',
+                data: ingresosData.map(d => d.ingreso)
+            }],
+            chart: {
+                type: 'area',
+                height: 350,
+                toolbar: {
+                    show: false
+                }
+            },
+            dataLabels: {
+                enabled: false
+            },
+            stroke: {
+                curve: 'smooth',
+                width: 2
+            },
+            xaxis: {
+                categories: ingresosData.map(d => d.fecha)
+            },
+            yaxis: {
+                labels: {
+                    formatter: function (val) {
+                        return new Intl.NumberFormat('es-CO', {
+                            style: 'currency',
+                            currency: 'COP',
+                            minimumFractionDigits: 0
+                        }).format(val);
+                    }
+                }
+            },
+            tooltip: {
+                y: {
+                    formatter: function (val) {
+                        return new Intl.NumberFormat('es-CO', {
+                            style: 'currency',
+                            currency: 'COP'
+                        }).format(val);
+                    }
+                }
+            },
+            colors: ['#5D87FF'],
+            fill: {
+                type: 'gradient',
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.7,
+                    opacityTo: 0.3,
+                    stops: [0, 100]
+                }
+            }
+        };
+
+        var chart = new ApexCharts(document.querySelector("#ingresos-chart"), options);
+        chart.render();
+    </script>
+}

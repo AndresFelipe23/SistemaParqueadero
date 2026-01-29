@@ -1,88 +1,392 @@
-@model IEnumerable<SistemaParqueaderoWEB.Models.RegistroParqueo>
+@model IEnumerable<SistemaParqueaderoWEB.Models.VehiculoActivoViewModel>
 @{
     ViewData["Title"] = "Vehículos Activos";
+    var totalVehículos = Model?.Count() ?? 0;
+    var totalMontoEstimado = Model?.Sum(v => v.MontoEstimado) ?? 0;
+    var tiempoPromedio = Model?.Any() == true 
+        ? TimeSpan.FromMinutes(Model.Average(v => (DateTime.Now - v.Registro.FechaEntrada).TotalMinutes))
+        : TimeSpan.Zero;
 }
 
-<div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>🚗 Vehículos Actualmente en el Parqueadero</h2>
-        <a asp-action="Index" class="btn btn-secondary">Volver al Inicio</a>
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h4 class="fw-semibold mb-1">Vehículos Activos</h4>
+        <p class="text-muted mb-0">Monitoreo en tiempo real de vehículos en el parqueadero</p>
     </div>
+    <a asp-action="Index" class="btn btn-light border">
+        <iconify-icon icon="solar:arrow-left-line-duotone" class="me-1"></iconify-icon>
+        Volver al inicio
+    </a>
+</div>
 
-    @if (Model == null || !Model.Any())
-    {
-        <div class="alert alert-info text-center">
-            <h4>No hay vehículos actualmente en el parqueadero</h4>
+@if (Model == null || !Model.Any())
+{
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <iconify-icon icon="solar:car-line-duotone" style="font-size: 4rem; color: #ccc;"></iconify-icon>
+            <h5 class="mb-2 mt-3">No hay vehículos activos</h5>
+            <p class="text-muted mb-4">
+                Actualmente no hay vehículos en el parqueadero.
+            </p>
+            <a asp-action="Entrada" class="btn btn-primary">
+                <iconify-icon icon="solar:login-2-line-duotone" class="me-1"></iconify-icon>
+                Registrar Entrada
+            </a>
         </div>
-    }
-    else
-    {
-        <div class="card shadow">
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>ID</th>
-                                <th>Placa</th>
-                                <th>Tipo</th>
-                                <th>Hora de Entrada</th>
-                                <th>Tiempo Parqueado</th>
-                                <th>Código</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in Model)
-                            {
-                                var tiempoParqueado = DateTime.Now - item.FechaEntrada;
-                                <tr>
-                                    <td>@item.Id</td>
-                                    <td><strong>@item.Placa</strong></td>
-                                    <td>
-                                        @if (item.TipoVehiculo == SistemaParqueaderoWEB.Models.TipoVehiculo.Carro)
-                                        {
-                                            <span class="badge bg-primary">🚗 Carro</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-info">🏍️ Moto</span>
-                                        }
-                                    </td>
-                                    <td>@item.FechaEntrada.ToString("dd/MM/yyyy HH:mm:ss")</td>
-                                    <td>
-                                        <strong>@tiempoParqueado.Hours</strong>h <strong>@tiempoParqueado.Minutes</strong>m
-                                    </td>
-                                    <td>
-                                        <small class="text-muted">@item.CodigoBarras</small>
-                                    </td>
-                                    <td>
-                                        <a asp-action="Salida" asp-route-placa="@item.Placa" 
-                                           class="btn btn-sm btn-danger">
-                                            Registrar Salida
-                                        </a>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+    </div>
+}
+else
+{
+    <!-- Tarjetas de resumen -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-top border-top-4 border-top-primary">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <iconify-icon icon="solar:car-line-duotone" style="font-size: 2rem; color: #258cfb;"></iconify-icon>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <p class="mb-1 text-muted small">Total vehículos</p>
+                            <h4 class="mb-0 fw-semibold">@totalVehículos</h4>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <div class="mt-3">
-            <p class="text-muted">
-                <strong>Total de vehículos:</strong> @Model.Count()
-            </p>
+        <div class="col-md-4">
+            <div class="card border-top border-top-4 border-top-success">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <iconify-icon icon="solar:dollar-minimalistic-line-duotone" style="font-size: 2rem; color: #10b759;"></iconify-icon>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <p class="mb-1 text-muted small">Monto total estimado</p>
+                            <h4 class="mb-0 fw-semibold text-success">
+                                @totalMontoEstimado.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-CO"))
+                            </h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    }
-</div>
+        <div class="col-md-4">
+            <div class="card border-top border-top-4 border-top-info">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <iconify-icon icon="solar:clock-circle-line-duotone" style="font-size: 2rem; color: #06b6d4;"></iconify-icon>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <p class="mb-1 text-muted small">Tiempo promedio</p>
+                            <h5 class="mb-0 fw-semibold">
+                                @(tiempoPromedio.Hours)h @(tiempoPromedio.Minutes)m
+                            </h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros y búsqueda -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label for="filtroPlaca" class="form-label small text-muted">Buscar por placa</label>
+                    <input type="text" 
+                           id="filtroPlaca" 
+                           class="form-control form-control-sm" 
+                           placeholder="🔍 Ej: ABC123" />
+                </div>
+                <div class="col-md-4">
+                    <label for="filtroTipo" class="form-label small text-muted">Filtrar por tipo</label>
+                    <select id="filtroTipo" class="form-select form-select-sm">
+                        <option value="">Todos</option>
+                        <option value="1">🚗 Carro</option>
+                        <option value="2">🏍️ Moto</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="filtroTiempo" class="form-label small text-muted">Ordenar por</label>
+                    <select id="filtroTiempo" class="form-select form-select-sm">
+                        <option value="entrada">Más reciente</option>
+                        <option value="tiempo">Más tiempo parqueado</option>
+                        <option value="monto">Mayor monto</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de vehículos activos -->
+    <div class="card">
+        <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <h5 class="card-title fw-semibold mb-0">
+                    <iconify-icon icon="solar:car-line-duotone" class="me-2"></iconify-icon>
+                    Listado de vehículos activos
+                </h5>
+                <span class="badge bg-primary rounded-pill">@totalVehículos vehículo(s)</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle table-hover mb-0" id="tabla-vehiculos-activos">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="fw-semibold">Ticket</th>
+                            <th class="fw-semibold">Placa</th>
+                            <th class="fw-semibold">Tipo</th>
+                            <th class="fw-semibold">Hora de entrada</th>
+                            <th class="fw-semibold">Tiempo parqueado</th>
+                            <th class="fw-semibold">Valor estimado</th>
+                            <th class="fw-semibold">Código</th>
+                            <th class="fw-semibold text-end">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            var tiempoParqueado = DateTime.Now - item.Registro.FechaEntrada;
+                            var horasTotales = tiempoParqueado.TotalHours;
+                            var esCarro = item.Registro.TipoVehiculo == SistemaParqueaderoWEB.Models.TipoVehiculo.Carro;
+                            var claseTiempo = horasTotales > 24 ? "text-danger" : horasTotales > 12 ? "text-warning" : "text-success";
+                            <tr data-fecha-entrada="@item.Registro.FechaEntrada.ToString("o")"
+                                data-tipo="@((int)item.Registro.TipoVehiculo)"
+                                data-placa="@item.Registro.Placa.ToLower()"
+                                data-monto="@item.MontoEstimado">
+                                <td>
+                                    <span class="badge bg-secondary">#@item.Registro.Id</span>
+                                </td>
+                                <td>
+                                    <strong class="text-primary fs-6">@item.Registro.Placa</strong>
+                                </td>
+                                <td>
+                                    <span class="badge @(esCarro ? "bg-info" : "bg-warning") fs-6">
+                                        @if (esCarro)
+                                        {
+                                            <iconify-icon icon="solar:car-line-duotone" class="me-1"></iconify-icon>
+                                        }
+                                        else
+                                        {
+                                            <iconify-icon icon="solar:motorcycle-line-duotone" class="me-1"></iconify-icon>
+                                        }
+                                        @item.Registro.TipoVehiculoTexto
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <iconify-icon icon="solar:login-2-line-duotone" class="me-1 text-success"></iconify-icon>
+                                        <div>
+                                            <div class="small">@item.Registro.FechaEntrada.ToString("dd/MM/yyyy")</div>
+                                            <div class="text-muted small">@item.Registro.FechaEntrada.ToString("HH:mm:ss")</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <strong class="tiempo-parqueado @claseTiempo" 
+                                            data-inicial="@tiempoParqueado.TotalMinutes">
+                                        @if (tiempoParqueado.Days > 0)
+                                        {
+                                            <span>@tiempoParqueado.Days d </span>
+                                        }
+                                        @tiempoParqueado.Hours h @tiempoParqueado.Minutes m
+                                    </strong>
+                                    @if (horasTotales > 24)
+                                    {
+                                        <div class="small text-danger">
+                                            <iconify-icon icon="solar:danger-triangle-line-duotone"></iconify-icon>
+                                            Tiempo extendido
+                                        </div>
+                                    }
+                                </td>
+                                <td>
+                                    <strong class="monto-estimado text-success" 
+                                            data-monto-inicial="@item.MontoEstimado">
+                                        @item.MontoEstimado.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-CO"))
+                                    </strong>
+                                </td>
+                                <td>
+                                    <div class="small">
+                                        <code class="text-muted">@item.Registro.CodigoBarras</code>
+                                    </div>
+                                </td>
+                                <td class="text-end">
+                                    <a asp-action="Salida" 
+                                       asp-route-placa="@item.Registro.Placa" 
+                                       class="btn btn-sm btn-danger">
+                                        <iconify-icon icon="solar:logout-2-line-duotone" class="me-1"></iconify-icon>
+                                        Registrar Salida
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
 
 @section Scripts {
     <script>
-        // Auto-refresh cada 30 segundos
-        setTimeout(function() {
-            location.reload();
-        }, 30000);
+        (function () {
+            const CARRO_POR_HORA = parseFloat('@ViewBag.CarroPorHora');
+            const MOTO_POR_HORA = parseFloat('@ViewBag.MotoPorHora');
+            const CARRO_POR_MINUTO = parseFloat('@ViewBag.CarroPorMinuto');
+            const MOTO_POR_MINUTO = parseFloat('@ViewBag.MotoPorMinuto');
+
+            function calcularMonto(tipo, minutosTotales) {
+                // Calcular horas completas y minutos restantes
+                const horasCompletas = Math.floor(minutosTotales / 60);
+                const minutosRestantes = minutosTotales % 60;
+                let monto = 0;
+                
+                if (tipo === 1) { // Carro
+                    if (horasCompletas < 1) {
+                        // Si es menos de una hora, cobrar solo por minutos
+                        monto = minutosTotales * CARRO_POR_MINUTO;
+                    } else {
+                        // Cobrar horas completas por hora + minutos restantes por minuto
+                        monto = (horasCompletas * CARRO_POR_HORA) + (minutosRestantes * CARRO_POR_MINUTO);
+                    }
+                } else { // Moto
+                    if (horasCompletas < 1) {
+                        // Si es menos de una hora, cobrar solo por minutos
+                        monto = minutosTotales * MOTO_POR_MINUTO;
+                    } else {
+                        // Cobrar horas completas por hora + minutos restantes por minuto
+                        monto = (horasCompletas * MOTO_POR_HORA) + (minutosRestantes * MOTO_POR_MINUTO);
+                    }
+                }
+                return Math.round(monto * 100) / 100; // Redondear a 2 decimales
+            }
+
+            function formatearTiempo(minutosTotales) {
+                const dias = Math.floor(minutosTotales / 1440);
+                const horas = Math.floor((minutosTotales % 1440) / 60);
+                const minutos = minutosTotales % 60;
+                
+                let resultado = '';
+                if (dias > 0) {
+                    resultado += `${dias} d `;
+                }
+                resultado += `${horas} h ${minutos} m`;
+                return resultado;
+            }
+
+            function obtenerClaseTiempo(horasTotales) {
+                if (horasTotales > 24) return 'text-danger';
+                if (horasTotales > 12) return 'text-warning';
+                return 'text-success';
+            }
+
+            function actualizarFilas() {
+                const filas = document.querySelectorAll('#tabla-vehiculos-activos tbody tr');
+                const ahora = new Date();
+
+                filas.forEach(function (fila) {
+                    const fechaEntradaStr = fila.getAttribute('data-fecha-entrada');
+                    const tipo = parseInt(fila.getAttribute('data-tipo'), 10);
+                    if (!fechaEntradaStr || !tipo) return;
+
+                    const fechaEntrada = new Date(fechaEntradaStr);
+                    const diffMs = ahora - fechaEntrada;
+                    if (diffMs < 0) return;
+
+                    const minutosTotales = Math.floor(diffMs / 60000);
+                    const horasTotales = minutosTotales / 60;
+
+                    const tiempoSpan = fila.querySelector('.tiempo-parqueado');
+                    if (tiempoSpan) {
+                        tiempoSpan.textContent = formatearTiempo(minutosTotales);
+                        tiempoSpan.className = `tiempo-parqueado ${obtenerClaseTiempo(horasTotales)}`;
+                        
+                        // Actualizar indicador de tiempo extendido
+                        const indicadorExtendido = tiempoSpan.nextElementSibling;
+                        if (horasTotales > 24) {
+                            if (!indicadorExtendido || !indicadorExtendido.classList.contains('small')) {
+                                const nuevoIndicador = document.createElement('div');
+                                nuevoIndicador.className = 'small text-danger';
+                                nuevoIndicador.innerHTML = '<iconify-icon icon="solar:danger-triangle-line-duotone"></iconify-icon> Tiempo extendido';
+                                tiempoSpan.parentElement.appendChild(nuevoIndicador);
+                            }
+                        } else if (indicadorExtendido && indicadorExtendido.classList.contains('small')) {
+                            indicadorExtendido.remove();
+                        }
+                    }
+
+                    const monto = calcularMonto(tipo, minutosTotales);
+                    const montoSpan = fila.querySelector('.monto-estimado');
+                    if (montoSpan) {
+                        montoSpan.textContent = monto.toLocaleString('es-CO', {
+                            style: 'currency',
+                            currency: 'COP'
+                        });
+                    }
+                });
+            }
+
+            // Filtros
+            const filtroPlaca = document.getElementById('filtroPlaca');
+            const filtroTipo = document.getElementById('filtroTipo');
+            const filtroTiempo = document.getElementById('filtroTiempo');
+            const tabla = document.getElementById('tabla-vehiculos-activos');
+
+            function aplicarFiltros() {
+                const placaFiltro = filtroPlaca.value.toLowerCase();
+                const tipoFiltro = filtroTipo.value;
+                const ordenFiltro = filtroTiempo.value;
+
+                const filas = Array.from(tabla.querySelectorAll('tbody tr'));
+                
+                // Filtrar
+                filas.forEach(function (fila) {
+                    const placa = fila.getAttribute('data-placa') || '';
+                    const tipo = fila.getAttribute('data-tipo') || '';
+                    
+                    const coincidePlaca = !placaFiltro || placa.includes(placaFiltro);
+                    const coincideTipo = !tipoFiltro || tipo === tipoFiltro;
+                    
+                    fila.style.display = (coincidePlaca && coincideTipo) ? '' : 'none';
+                });
+
+                // Ordenar filas visibles
+                const filasVisibles = filas.filter(f => f.style.display !== 'none');
+                
+                if (ordenFiltro === 'tiempo') {
+                    filasVisibles.sort((a, b) => {
+                        const minutosA = parseFloat(a.querySelector('.tiempo-parqueado')?.getAttribute('data-inicial') || 0);
+                        const minutosB = parseFloat(b.querySelector('.tiempo-parqueado')?.getAttribute('data-inicial') || 0);
+                        return minutosB - minutosA; // Mayor tiempo primero
+                    });
+                } else if (ordenFiltro === 'monto') {
+                    filasVisibles.sort((a, b) => {
+                        const montoA = parseFloat(a.getAttribute('data-monto') || 0);
+                        const montoB = parseFloat(b.getAttribute('data-monto') || 0);
+                        return montoB - montoA; // Mayor monto primero
+                    });
+                } else { // entrada (más reciente primero)
+                    filasVisibles.sort((a, b) => {
+                        const fechaA = new Date(a.getAttribute('data-fecha-entrada'));
+                        const fechaB = new Date(b.getAttribute('data-fecha-entrada'));
+                        return fechaB - fechaA;
+                    });
+                }
+
+                // Reordenar en el DOM
+                const tbody = tabla.querySelector('tbody');
+                filasVisibles.forEach(fila => tbody.appendChild(fila));
+            }
+
+            if (filtroPlaca) filtroPlaca.addEventListener('input', aplicarFiltros);
+            if (filtroTipo) filtroTipo.addEventListener('change', aplicarFiltros);
+            if (filtroTiempo) filtroTiempo.addEventListener('change', aplicarFiltros);
+
+            // Actualizar al cargar y luego cada 30 segundos
+            actualizarFilas();
+            setInterval(actualizarFilas, 30000);
+        })();
     </script>
 }

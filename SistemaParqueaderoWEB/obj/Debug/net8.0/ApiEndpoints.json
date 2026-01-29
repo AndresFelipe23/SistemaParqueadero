@@ -1,1 +1,18 @@
-[]
+[
+  {
+    "ContainingType": "SistemaParqueaderoWEB.Controllers.UsuariosController",
+    "Method": "CrearUsuario",
+    "RelativePath": "api/Usuarios",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "SistemaParqueaderoWEB.Controllers.UsuariosController\u002BCrearUsuarioRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  }
+]

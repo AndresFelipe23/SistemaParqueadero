@@ -4014,25 +4014,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\57315\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {},
-    "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
+    "C:\\Users\\andre\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\57315\\source\\repos\\SistemaParqueadero\\SistemaParqueaderoWEB\\SistemaParqueaderoWEB.csproj",
+      "projectUniqueName": "c:\\Users\\andre\\source\\repos\\AndresFelipe23\\SistemaParqueadero\\SistemaParqueaderoWEB\\SistemaParqueaderoWEB.csproj",
       "projectName": "SistemaParqueaderoWEB",
-      "projectPath": "C:\\Users\\57315\\source\\repos\\SistemaParqueadero\\SistemaParqueaderoWEB\\SistemaParqueaderoWEB.csproj",
-      "packagesPath": "C:\\Users\\57315\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\57315\\source\\repos\\SistemaParqueadero\\SistemaParqueaderoWEB\\obj\\",
+      "projectPath": "c:\\Users\\andre\\source\\repos\\AndresFelipe23\\SistemaParqueadero\\SistemaParqueaderoWEB\\SistemaParqueaderoWEB.csproj",
+      "packagesPath": "C:\\Users\\andre\\.nuget\\packages\\",
+      "outputPath": "c:\\Users\\andre\\source\\repos\\AndresFelipe23\\SistemaParqueadero\\SistemaParqueaderoWEB\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
-        "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\57315\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\andre\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -4041,6 +4039,7 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {

@@ -1,0 +1,194 @@
+@model SistemaParqueaderoWEB.Models.TarifasViewModel
+@{
+    ViewData["Title"] = "Gestión de Tarifas";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h4 class="fw-semibold mb-1">Gestión de Tarifas</h4>
+        <p class="text-muted mb-0">Configure las tarifas del parqueadero</p>
+    </div>
+    <a asp-action="Index" class="btn btn-light border">
+        <iconify-icon icon="solar:arrow-left-line-duotone" class="me-1"></iconify-icon>
+        Volver
+    </a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <iconify-icon icon="solar:check-circle-line-duotone" class="me-2"></iconify-icon>
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <iconify-icon icon="solar:danger-triangle-line-duotone" class="me-2"></iconify-icon>
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="alert alert-success">
+    <iconify-icon icon="solar:check-circle-line-duotone" class="me-2"></iconify-icon>
+    <strong>Importante:</strong> Los cambios en las tarifas se guardarán en la base de datos y se aplicarán inmediatamente en todos los cálculos del sistema.
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title fw-semibold mb-4">
+            <iconify-icon icon="solar:dollar-minimalistic-line-duotone" class="me-2"></iconify-icon>
+            Tarifas por tipo de vehículo
+        </h5>
+
+        <form asp-action="Tarifas" method="post">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card border-top border-top-4 border-top-info">
+                        <div class="card-body">
+                            <h6 class="fw-semibold mb-3">
+                                <iconify-icon icon="solar:car-line-duotone" class="me-2"></iconify-icon>
+                                Carro
+                            </h6>
+                            <div class="mb-3">
+                                <label asp-for="CarroPorHora" class="form-label fw-semibold">
+                                    Por hora <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input asp-for="CarroPorHora" 
+                                           class="form-control" 
+                                           type="number" 
+                                           step="0.01" 
+                                           min="0" />
+                                </div>
+                                <span asp-validation-for="CarroPorHora" class="text-danger small"></span>
+                            </div>
+                            <div>
+                                <label asp-for="CarroPorMinuto" class="form-label fw-semibold">
+                                    Por minuto <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input asp-for="CarroPorMinuto" 
+                                           class="form-control" 
+                                           type="number" 
+                                           step="0.01" 
+                                           min="0" />
+                                </div>
+                                <span asp-validation-for="CarroPorMinuto" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card border-top border-top-4 border-top-warning">
+                        <div class="card-body">
+                            <h6 class="fw-semibold mb-3">
+                                <iconify-icon icon="solar:motorcycle-line-duotone" class="me-2"></iconify-icon>
+                                Moto
+                            </h6>
+                            <div class="mb-3">
+                                <label asp-for="MotoPorHora" class="form-label fw-semibold">
+                                    Por hora <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input asp-for="MotoPorHora" 
+                                           class="form-control" 
+                                           type="number" 
+                                           step="0.01" 
+                                           min="0" />
+                                </div>
+                                <span asp-validation-for="MotoPorHora" class="text-danger small"></span>
+                            </div>
+                            <div>
+                                <label asp-for="MotoPorMinuto" class="form-label fw-semibold">
+                                    Por minuto <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input asp-for="MotoPorMinuto" 
+                                           class="form-control" 
+                                           type="number" 
+                                           step="0.01" 
+                                           min="0" />
+                                </div>
+                                <span asp-validation-for="MotoPorMinuto" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resumen -->
+            <div class="card bg-light mb-4">
+                <div class="card-body">
+                    <h6 class="fw-semibold mb-3">Resumen de tarifas</h6>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <p class="mb-1 text-muted small">Carro/hora</p>
+                            <h5 class="mb-0 fw-semibold text-info" id="resumenCarroHora">
+                                $@Model.CarroPorHora.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("es-CO"))
+                            </h5>
+                        </div>
+                        <div class="col-md-3">
+                            <p class="mb-1 text-muted small">Carro/minuto</p>
+                            <h5 class="mb-0 fw-semibold text-info" id="resumenCarroMinuto">
+                                $@Model.CarroPorMinuto.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("es-CO"))
+                            </h5>
+                        </div>
+                        <div class="col-md-3">
+                            <p class="mb-1 text-muted small">Moto/hora</p>
+                            <h5 class="mb-0 fw-semibold text-warning" id="resumenMotoHora">
+                                $@Model.MotoPorHora.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("es-CO"))
+                            </h5>
+                        </div>
+                        <div class="col-md-3">
+                            <p class="mb-1 text-muted small">Moto/minuto</p>
+                            <h5 class="mb-0 fw-semibold text-warning" id="resumenMotoMinuto">
+                                $@Model.MotoPorMinuto.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("es-CO"))
+                            </h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a asp-action="Index" class="btn btn-light border">
+                    <iconify-icon icon="solar:arrow-left-line-duotone" class="me-1"></iconify-icon>
+                    Cancelar
+                </a>
+                <button type="submit" class="btn btn-success btn-lg">
+                    <iconify-icon icon="solar:check-circle-line-duotone" class="me-2"></iconify-icon>
+                    Guardar Tarifas
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const inputs = ['CarroPorHora', 'CarroPorMinuto', 'MotoPorHora', 'MotoPorMinuto'];
+            
+            inputs.forEach(function(inputId) {
+                const input = document.getElementById(inputId);
+                const resumen = document.getElementById('resumen' + inputId);
+                
+                if (input && resumen) {
+                    input.addEventListener('input', function() {
+                        const valor = parseFloat(this.value) || 0;
+                        resumen.textContent = '$' + valor.toLocaleString('es-CO');
+                    });
+                }
+            });
+        })();
+    </script>
+}

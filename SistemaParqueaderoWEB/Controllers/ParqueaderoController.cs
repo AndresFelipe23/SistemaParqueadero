@@ -1,11 +1,14 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SistemaParqueaderoWEB.Data;
 using SistemaParqueaderoWEB.Models;
 using System.Globalization;
+using System.Security.Claims;
 
 namespace SistemaParqueaderoWEB.Controllers
 {
+    [Authorize]
     public class ParqueaderoController : Controller
     {
         private readonly ParqueaderoDbContext _context;
@@ -22,10 +25,171 @@ namespace SistemaParqueaderoWEB.Controllers
             _logger = logger;
         }
 
-        // GET: Parqueadero/Index - Página principal
-        public IActionResult Index()
+        // GET: Parqueadero/Index - Página principal (Dashboard)
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var hoy = DateTime.Today;
+            var inicioMes = new DateTime(hoy.Year, hoy.Month, 1);
+            var ultimos7Dias = hoy.AddDays(-6);
+
+            var model = new DashboardViewModel();
+
+            // Vehículos activos
+            var vehiculosActivos = await _context.RegistrosParqueo
+                .Include(r => r.Vehiculo)
+                .Where(r => r.Activo)
+                .ToListAsync();
+
+            model.VehiculosActivos = vehiculosActivos.Count;
+            model.CarrosActivos = vehiculosActivos.Count(r => r.TipoVehiculo == TipoVehiculo.Carro);
+            model.MotosActivas = vehiculosActivos.Count(r => r.TipoVehiculo == TipoVehiculo.Moto);
+
+            // Ingresos del día (pagos completados hoy)
+            var pagosHoy = await _context.Pagos
+                .Where(p => p.EstadoPago == "Completado" && p.FechaPago.Date == hoy)
+                .SumAsync(p => p.Monto);
+
+            model.IngresosHoy = pagosHoy;
+
+            // Ingresos del mes
+            var pagosMes = await _context.Pagos
+                .Where(p => p.EstadoPago == "Completado" && p.FechaPago >= inicioMes)
+                .SumAsync(p => p.Monto);
+
+            model.IngresosMes = pagosMes;
+
+            // Registros del día (entradas y salidas)
+            var registrosHoy = await _context.RegistrosParqueo
+                .Where(r => r.FechaEntrada.Date == hoy || (r.FechaSalida.HasValue && r.FechaSalida.Value.Date == hoy))
+                .CountAsync();
+
+            model.RegistrosHoy = registrosHoy;
+
+            // Pagos pendientes
+            var pagosPendientes = await _context.RegistrosParqueo
+                .Include(r => r.Vehiculo)
+                .Where(r => !r.Activo && r.FechaSalida.HasValue && 
+                           !r.Pagos.Any(p => p.EstadoPago == "Completado"))
+                .ToListAsync();
+
+            model.PagosPendientes = pagosPendientes.Count;
+            model.MontoPendiente = pagosPendientes
+                .Where(r => r.MontoFinal.HasValue)
+                .Sum(r => r.MontoFinal!.Value);
+
+            // Estadísticas por tipo de vehículo (hoy)
+            var registrosHoyList = await _context.RegistrosParqueo
+                .Include(r => r.Vehiculo)
+                .Include(r => r.Pagos)
+                .Where(r => r.FechaSalida.HasValue && r.FechaSalida.Value.Date == hoy)
+                .ToListAsync();
+
+            model.TotalCarrosHoy = registrosHoyList.Count(r => r.TipoVehiculo == TipoVehiculo.Carro);
+            model.TotalMotosHoy = registrosHoyList.Count(r => r.TipoVehiculo == TipoVehiculo.Moto);
+
+            model.IngresosCarrosHoy = registrosHoyList
+                .Where(r => r.TipoVehiculo == TipoVehiculo.Carro)
+                .SelectMany(r => r.Pagos)
+                .Where(p => p.EstadoPago == "Completado")
+                .Sum(p => p.Monto);
+
+            model.IngresosMotosHoy = registrosHoyList
+                .Where(r => r.TipoVehiculo == TipoVehiculo.Moto)
+                .SelectMany(r => r.Pagos)
+                .Where(p => p.EstadoPago == "Completado")
+                .Sum(p => p.Monto);
+
+            // Vehículos activos recientes (últimos 5)
+            var vehiculosActivosRecientes = vehiculosActivos
+                .OrderByDescending(r => r.FechaEntrada)
+                .Take(5)
+                .ToList();
+
+            foreach (var r in vehiculosActivosRecientes)
+            {
+                var tiempo = DateTime.Now - r.FechaEntrada;
+                var monto = await CalcularMontoEstimado(r, tiempo);
+                model.VehiculosActivosRecientes.Add(new VehiculoActivoViewModel
+                {
+                    Registro = r,
+                    MontoEstimado = monto
+                });
+            }
+
+            // Actividades recientes (últimas 10)
+            var actividades = new List<ActividadRecienteViewModel>();
+
+            // Entradas recientes
+            var entradasRecientes = await _context.RegistrosParqueo
+                .Include(r => r.Vehiculo)
+                .Include(r => r.UsuarioEntrada)
+                .Where(r => r.FechaEntrada >= ultimos7Dias)
+                .OrderByDescending(r => r.FechaEntrada)
+                .Take(10)
+                .ToListAsync();
+
+            foreach (var r in entradasRecientes)
+            {
+                actividades.Add(new ActividadRecienteViewModel
+                {
+                    Fecha = r.FechaEntrada,
+                    Tipo = "Entrada",
+                    Placa = r.Placa,
+                    TipoVehiculo = r.TipoVehiculoTexto,
+                    Usuario = r.UsuarioEntrada != null ? $"{r.UsuarioEntrada.Nombre} {r.UsuarioEntrada.Apellido}" : "N/A"
+                });
+            }
+
+            // Salidas recientes
+            var salidasRecientes = await _context.RegistrosParqueo
+                .Include(r => r.Vehiculo)
+                .Include(r => r.UsuarioSalida)
+                .Include(r => r.Pagos)
+                .Where(r => r.FechaSalida.HasValue && r.FechaSalida.Value >= ultimos7Dias)
+                .OrderByDescending(r => r.FechaSalida)
+                .Take(10)
+                .ToListAsync();
+
+            foreach (var r in salidasRecientes)
+            {
+                var pago = r.Pagos.FirstOrDefault(p => p.EstadoPago == "Completado");
+                actividades.Add(new ActividadRecienteViewModel
+                {
+                    Fecha = r.FechaSalida!.Value,
+                    Tipo = "Salida",
+                    Placa = r.Placa,
+                    TipoVehiculo = r.TipoVehiculoTexto,
+                    Monto = pago?.Monto ?? r.MontoFinal,
+                    Usuario = r.UsuarioSalida != null ? $"{r.UsuarioSalida.Nombre} {r.UsuarioSalida.Apellido}" : "N/A"
+                });
+            }
+
+            model.ActividadesRecientes = actividades
+                .OrderByDescending(a => a.Fecha)
+                .Take(10)
+                .ToList();
+
+            // Ingresos últimos 7 días para gráfico
+            for (int i = 6; i >= 0; i--)
+            {
+                var fecha = hoy.AddDays(-i);
+                var ingresosDia = await _context.Pagos
+                    .Where(p => p.EstadoPago == "Completado" && p.FechaPago.Date == fecha)
+                    .SumAsync(p => p.Monto);
+
+                var registrosDia = await _context.RegistrosParqueo
+                    .Where(r => r.FechaSalida.HasValue && r.FechaSalida.Value.Date == fecha)
+                    .CountAsync();
+
+                model.IngresosUltimos7Dias.Add(new IngresoDiarioViewModel
+                {
+                    Fecha = fecha,
+                    Ingreso = ingresosDia,
+                    Registros = registrosDia
+                });
+            }
+
+            return View(model);
         }
 
         // GET: Parqueadero/Entrada - Formulario de entrada
@@ -37,7 +201,7 @@ namespace SistemaParqueaderoWEB.Controllers
         // POST: Parqueadero/Entrada - Registrar entrada de vehículo
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Entrada(string placa, TipoVehiculo tipoVehiculo, string? codigoBarras)
+        public async Task<IActionResult> Entrada(string placa, TipoVehiculo tipoVehiculo, string? codigoBarras, string? observacionesEntrada)
         {
             if (string.IsNullOrWhiteSpace(placa))
             {
@@ -98,8 +262,16 @@ namespace SistemaParqueaderoWEB.Controllers
                 VehiculoId = vehiculo.Id,
                 CodigoBarras = codigoBarras,
                 FechaEntrada = DateTime.Now,
-                Activo = true
+                Activo = true,
+                ObservacionesEntrada = string.IsNullOrWhiteSpace(observacionesEntrada) ? null : observacionesEntrada.Trim()
             };
+
+            // Asignar usuario de entrada si hay sesión
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (int.TryParse(userIdClaim, out var usuarioId))
+            {
+                registro.UsuarioEntradaId = usuarioId;
+            }
 
             _context.RegistrosParqueo.Add(registro);
             await _context.SaveChangesAsync();
@@ -111,8 +283,9 @@ namespace SistemaParqueaderoWEB.Controllers
         }
 
         // GET: Parqueadero/Salida - Formulario de salida
-        public IActionResult Salida()
+        public IActionResult Salida(string? placa)
         {
+            ViewBag.Placa = placa?.Trim().ToUpper();
             return View();
         }
 
@@ -149,18 +322,34 @@ namespace SistemaParqueaderoWEB.Controllers
                 return View();
             }
 
-            // Calcular monto
+            // Calcular monto y actualizar datos de salida
             registro.FechaSalida = DateTime.Now;
-            registro.MontoTotal = CalcularMonto(registro);
+            registro.MontoTotal = await CalcularMonto(registro);
             registro.MontoFinal = registro.MontoTotal - registro.DescuentoAplicado;
             registro.Activo = false;
+
+            // Guardar minutos totales parqueado
+            if (registro.TiempoParqueado.HasValue)
+            {
+                registro.TiempoParqueadoMinutos = (int)Math.Round(registro.TiempoParqueado.Value.TotalMinutes);
+            }
+
+            // Asignar usuario de salida si hay sesión
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (int.TryParse(userIdClaim, out var usuarioId))
+            {
+                registro.UsuarioSalidaId = usuarioId;
+            }
+
+            registro.FechaActualizacion = DateTime.Now;
 
             await _context.SaveChangesAsync();
 
             TempData["Mensaje"] = $"Salida registrada exitosamente para el vehículo {registro.Placa}";
             TempData["RegistroId"] = registro.Id;
 
-            return RedirectToAction(nameof(ReciboSalida), new { id = registro.Id });
+            // Redirigir a registrar el pago
+            return RedirectToAction("RegistrarPago", "Pagos", new { registroId = registro.Id });
         }
 
         // GET: Parqueadero/ReciboEntrada
@@ -245,7 +434,7 @@ namespace SistemaParqueaderoWEB.Controllers
             }
 
             var tiempoParqueado = DateTime.Now - registro.FechaEntrada;
-            var montoEstimado = CalcularMontoEstimado(registro, tiempoParqueado);
+            var montoEstimado = await CalcularMontoEstimado(registro, tiempoParqueado);
 
             return Json(new
             {
@@ -265,13 +454,87 @@ namespace SistemaParqueaderoWEB.Controllers
         // GET: Parqueadero/VehiculosActivos - Lista de vehículos activos
         public async Task<IActionResult> VehiculosActivos()
         {
-            var vehiculos = await _context.RegistrosParqueo
+            var registros = await _context.RegistrosParqueo
                 .Include(r => r.Vehiculo)
                 .Where(r => r.Activo)
                 .OrderByDescending(r => r.FechaEntrada)
                 .ToListAsync();
 
-            return View(vehiculos);
+            var tarifas = await ObtenerTarifasAsync();
+            
+            var lista = new List<VehiculoActivoViewModel>();
+            foreach (var r in registros)
+            {
+                var tiempo = DateTime.Now - r.FechaEntrada;
+                var monto = await CalcularMontoEstimado(r, tiempo);
+                lista.Add(new VehiculoActivoViewModel
+                {
+                    Registro = r,
+                    MontoEstimado = monto
+                });
+            }
+
+            ViewBag.CarroPorHora = tarifas.CarroPorHora;
+            ViewBag.MotoPorHora = tarifas.MotoPorHora;
+            ViewBag.CarroPorMinuto = tarifas.CarroPorMinuto;
+            ViewBag.MotoPorMinuto = tarifas.MotoPorMinuto;
+
+            return View(lista);
+        }
+
+        // GET: Parqueadero/HistorialVehiculo?placa=ABC123
+        public async Task<IActionResult> HistorialVehiculo(string? placa)
+        {
+            var model = new VehiculoHistorialViewModel
+            {
+                PlacaBuscada = placa?.ToUpper().Trim() ?? string.Empty
+            };
+
+            // Listar todos los vehículos para poder seleccionarlos
+            model.Vehiculos = await _context.Vehiculos
+                .OrderByDescending(v => v.FechaUltimaVisita ?? v.FechaPrimeraVisita ?? v.FechaCreacion)
+                .ToListAsync();
+
+            // Base: todos los registros (para poder listar historial completo)
+            var query = _context.RegistrosParqueo
+                .Include(r => r.Vehiculo)
+                .Include(r => r.UsuarioEntrada)
+                .Include(r => r.UsuarioSalida)
+                .Include(r => r.Pagos)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(placa))
+            {
+                placa = placa.Trim().ToUpper();
+
+                var vehiculo = await _context.Vehiculos
+                    .FirstOrDefaultAsync(v => v.Placa == placa);
+
+                if (vehiculo == null)
+                {
+                    ModelState.AddModelError(string.Empty, $"No se encontró un vehículo con placa {placa}.");
+                }
+                else
+                {
+                    model.Vehiculo = vehiculo;
+                    query = query.Where(r => r.Vehiculo.Placa == placa);
+                }
+            }
+
+            var registros = await query
+                .OrderByDescending(r => r.FechaEntrada)
+                .ToListAsync();
+
+            model.Registros = registros;
+            model.TotalVisitas = registros.Count;
+            model.TotalRecaudado = registros.Sum(r => r.MontoFinal ?? 0);
+
+            var totalMinutos = registros
+                .Where(r => r.TiempoParqueadoMinutos.HasValue)
+                .Sum(r => r.TiempoParqueadoMinutos!.Value);
+            model.TiempoTotalParqueado = TimeSpan.FromMinutes(totalMinutos);
+
+            return View(model);
         }
 
         // Métodos auxiliares
@@ -280,7 +543,55 @@ namespace SistemaParqueaderoWEB.Controllers
             return $"PARQ{DateTime.Now:yyyyMMddHHmmss}{new Random().Next(1000, 9999)}";
         }
 
-        private decimal CalcularMonto(RegistroParqueo registro)
+        // Obtener tarifas desde la base de datos
+        private async Task<(decimal CarroPorHora, decimal MotoPorHora, decimal CarroPorMinuto, decimal MotoPorMinuto)> ObtenerTarifasAsync()
+        {
+            try
+            {
+                var configs = await _context.Configuracion
+                    .Where(c => c.Clave.StartsWith("Tarifas."))
+                    .ToListAsync();
+
+                var carroPorHora = configs.FirstOrDefault(c => c.Clave == "Tarifas.CarroPorHora");
+                var motoPorHora = configs.FirstOrDefault(c => c.Clave == "Tarifas.MotoPorHora");
+                var carroPorMinuto = configs.FirstOrDefault(c => c.Clave == "Tarifas.CarroPorMinuto");
+                var motoPorMinuto = configs.FirstOrDefault(c => c.Clave == "Tarifas.MotoPorMinuto");
+
+                // Valores por defecto si no existen en la BD
+                const decimal DEFAULT_CARRO_HORA = 2000;
+                const decimal DEFAULT_MOTO_HORA = 1000;
+                const decimal DEFAULT_CARRO_MINUTO = 70;
+                const decimal DEFAULT_MOTO_MINUTO = 70;
+
+                return (
+                    CarroPorHora: carroPorHora != null && decimal.TryParse(carroPorHora.Valor, NumberStyles.Any, CultureInfo.InvariantCulture, out var ch) 
+                        ? ch 
+                        : DEFAULT_CARRO_HORA,
+                    MotoPorHora: motoPorHora != null && decimal.TryParse(motoPorHora.Valor, NumberStyles.Any, CultureInfo.InvariantCulture, out var mh) 
+                        ? mh 
+                        : DEFAULT_MOTO_HORA,
+                    CarroPorMinuto: carroPorMinuto != null && decimal.TryParse(carroPorMinuto.Valor, NumberStyles.Any, CultureInfo.InvariantCulture, out var cm) 
+                        ? cm 
+                        : DEFAULT_CARRO_MINUTO,
+                    MotoPorMinuto: motoPorMinuto != null && decimal.TryParse(motoPorMinuto.Valor, NumberStyles.Any, CultureInfo.InvariantCulture, out var mm) 
+                        ? mm 
+                        : DEFAULT_MOTO_MINUTO
+                );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Error al obtener tarifas desde BD, usando valores por defecto");
+                // Valores por defecto en caso de error
+                return (
+                    CarroPorHora: 2000,
+                    MotoPorHora: 1000,
+                    CarroPorMinuto: 70,
+                    MotoPorMinuto: 70
+                );
+            }
+        }
+
+        private async Task<decimal> CalcularMonto(RegistroParqueo registro)
         {
             if (!registro.FechaSalida.HasValue)
             {
@@ -288,48 +599,43 @@ namespace SistemaParqueaderoWEB.Controllers
             }
 
             var tiempoParqueado = registro.FechaSalida.Value - registro.FechaEntrada;
-            return CalcularMontoEstimado(registro, tiempoParqueado);
+            return await CalcularMontoEstimado(registro, tiempoParqueado);
         }
 
-        private decimal CalcularMontoEstimado(RegistroParqueo registro, TimeSpan tiempoParqueado)
+        private async Task<decimal> CalcularMontoEstimado(RegistroParqueo registro, TimeSpan tiempoParqueado)
         {
-            var tarifas = _configuration.GetSection("Tarifas");
+            var tarifas = await ObtenerTarifasAsync();
             decimal monto = 0;
+
+            // Calcular horas completas y minutos restantes
+            var horasCompletas = tiempoParqueado.Hours;
+            var minutosRestantes = tiempoParqueado.Minutes;
+            var totalMinutos = (int)tiempoParqueado.TotalMinutes;
 
             if (registro.TipoVehiculo == TipoVehiculo.Carro)
             {
-                var horas = (decimal)tiempoParqueado.TotalHours;
-                var tarifaPorHora = tarifas.GetValue<decimal>("CarroPorHora");
-                var tarifaPorMinuto = tarifas.GetValue<decimal>("CarroPorMinuto");
-
-                // Si es menos de una hora, cobrar por minutos
-                if (horas < 1)
+                // Si es menos de una hora, cobrar solo por minutos
+                if (horasCompletas < 1)
                 {
-                    var minutos = (decimal)tiempoParqueado.TotalMinutes;
-                    monto = minutos * tarifaPorMinuto;
+                    monto = totalMinutos * tarifas.CarroPorMinuto;
                 }
                 else
                 {
-                    // Redondear hacia arriba las horas
-                    var horasRedondeadas = Math.Ceiling(horas);
-                    monto = horasRedondeadas * tarifaPorHora;
+                    // Cobrar horas completas por hora + minutos restantes por minuto
+                    monto = (horasCompletas * tarifas.CarroPorHora) + (minutosRestantes * tarifas.CarroPorMinuto);
                 }
             }
             else // Moto
             {
-                var horas = (decimal)tiempoParqueado.TotalHours;
-                var tarifaPorHora = tarifas.GetValue<decimal>("MotoPorHora");
-                var tarifaPorMinuto = tarifas.GetValue<decimal>("MotoPorMinuto");
-
-                if (horas < 1)
+                // Si es menos de una hora, cobrar solo por minutos
+                if (horasCompletas < 1)
                 {
-                    var minutos = (decimal)tiempoParqueado.TotalMinutes;
-                    monto = minutos * tarifaPorMinuto;
+                    monto = totalMinutos * tarifas.MotoPorMinuto;
                 }
                 else
                 {
-                    var horasRedondeadas = Math.Ceiling(horas);
-                    monto = horasRedondeadas * tarifaPorHora;
+                    // Cobrar horas completas por hora + minutos restantes por minuto
+                    monto = (horasCompletas * tarifas.MotoPorHora) + (minutosRestantes * tarifas.MotoPorMinuto);
                 }
             }
 

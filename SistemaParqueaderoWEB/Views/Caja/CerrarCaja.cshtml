@@ -1,0 +1,225 @@
+@model SistemaParqueaderoWEB.Models.CierreCajaViewModel
+@{
+    ViewData["Title"] = "Cerrar Caja";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h4 class="fw-semibold mb-1">Cerrar Caja</h4>
+        <p class="text-muted mb-0">Registra los montos reales y cierra la caja del día</p>
+    </div>
+    <a asp-action="Index" class="btn btn-light border">
+        <iconify-icon icon="solar:arrow-left-line-duotone" class="me-1"></iconify-icon>
+        Volver
+    </a>
+</div>
+
+<!-- Resumen del día -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card border-top border-top-4 border-top-primary">
+            <div class="card-body text-center">
+                <p class="mb-1 text-muted small">Total registros</p>
+                <h3 class="mb-0 fw-semibold">@Model.TotalRegistros</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-top border-top-4 border-top-info">
+            <div class="card-body text-center">
+                <p class="mb-1 text-muted small">Carros</p>
+                <h3 class="mb-0 fw-semibold">@Model.TotalCarros</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-top border-top-4 border-top-warning">
+            <div class="card-body text-center">
+                <p class="mb-1 text-muted small">Motos</p>
+                <h3 class="mb-0 fw-semibold">@Model.TotalMotos</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-top border-top-4 border-top-success">
+            <div class="card-body text-center">
+                <p class="mb-1 text-muted small">Monto esperado</p>
+                <h4 class="mb-0 fw-semibold text-success">
+                    @Model.MontoEsperado.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-CO"))
+                </h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Formulario de cierre -->
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title fw-semibold mb-4">
+            <iconify-icon icon="solar:wallet-money-line-duotone" class="me-2"></iconify-icon>
+            Montos reales en caja
+        </h5>
+
+        <form asp-action="CerrarCaja" method="post">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <label asp-for="MontoEfectivoReal" class="form-label fw-semibold">
+                                <iconify-icon icon="solar:wallet-money-line-duotone" class="me-1"></iconify-icon>
+                                Monto en efectivo
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input asp-for="MontoEfectivoReal" 
+                                       class="form-control form-control-lg" 
+                                       type="number" 
+                                       step="0.01" 
+                                       min="0" />
+                            </div>
+                            <span asp-validation-for="MontoEfectivoReal" class="text-danger small"></span>
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    Esperado: <strong>@Model.MontoEfectivo.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-CO"))</strong>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <label asp-for="MontoTarjetaReal" class="form-label fw-semibold">
+                                <iconify-icon icon="solar:card-line-duotone" class="me-1"></iconify-icon>
+                                Monto en tarjeta
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input asp-for="MontoTarjetaReal" 
+                                       class="form-control form-control-lg" 
+                                       type="number" 
+                                       step="0.01" 
+                                       min="0" />
+                            </div>
+                            <span asp-validation-for="MontoTarjetaReal" class="text-danger small"></span>
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    Esperado: <strong>@Model.MontoTarjeta.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-CO"))</strong>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <label asp-for="MontoTransferenciaReal" class="form-label fw-semibold">
+                                <iconify-icon icon="solar:transfer-horizontal-line-duotone" class="me-1"></iconify-icon>
+                                Monto en transferencia
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input asp-for="MontoTransferenciaReal" 
+                                       class="form-control form-control-lg" 
+                                       type="number" 
+                                       step="0.01" 
+                                       min="0" />
+                            </div>
+                            <span asp-validation-for="MontoTransferenciaReal" class="text-danger small"></span>
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    Esperado: <strong>@Model.MontoTransferencia.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-CO"))</strong>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resumen calculado -->
+            <div class="card bg-primary bg-opacity-10 mb-4">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h6 class="mb-0 fw-semibold">Total real en caja:</h6>
+                            <h4 class="mb-0 mt-2 fw-bold text-primary" id="totalReal">
+                                $0.00
+                            </h4>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <div class="small text-muted mb-1">Diferencia:</div>
+                            <h5 class="mb-0 fw-semibold" id="diferencia">
+                                $0.00
+                            </h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Observaciones -->
+            <div class="mb-4">
+                <label asp-for="Observaciones" class="form-label fw-semibold">
+                    Observaciones (opcional)
+                </label>
+                <textarea asp-for="Observaciones" 
+                          class="form-control" 
+                          rows="3" 
+                          placeholder="Notas adicionales sobre el cierre de caja..."></textarea>
+                <span asp-validation-for="Observaciones" class="text-danger small"></span>
+            </div>
+
+            <!-- Botones -->
+            <div class="d-flex justify-content-between">
+                <a asp-action="Index" class="btn btn-light border">
+                    <iconify-icon icon="solar:arrow-left-line-duotone" class="me-1"></iconify-icon>
+                    Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <iconify-icon icon="solar:wallet-money-line-duotone" class="me-2"></iconify-icon>
+                    Confirmar Cierre de Caja
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const montoEfectivo = document.getElementById('MontoEfectivoReal');
+            const montoTarjeta = document.getElementById('MontoTarjetaReal');
+            const montoTransferencia = document.getElementById('MontoTransferenciaReal');
+            const totalReal = document.getElementById('totalReal');
+            const diferencia = document.getElementById('diferencia');
+            const montoEsperado = @Model.MontoEsperado.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+            function actualizarTotales() {
+                const efectivo = parseFloat(montoEfectivo.value) || 0;
+                const tarjeta = parseFloat(montoTarjeta.value) || 0;
+                const transferencia = parseFloat(montoTransferencia.value) || 0;
+                const total = efectivo + tarjeta + transferencia;
+                const diff = total - montoEsperado;
+
+                totalReal.textContent = total.toLocaleString('es-CO', {
+                    style: 'currency',
+                    currency: 'COP'
+                });
+
+                diferencia.textContent = diff.toLocaleString('es-CO', {
+                    style: 'currency',
+                    currency: 'COP'
+                });
+                diferencia.className = diff >= 0 ? 'mb-0 fw-semibold text-success' : 'mb-0 fw-semibold text-danger';
+            }
+
+            [montoEfectivo, montoTarjeta, montoTransferencia].forEach(input => {
+                input.addEventListener('input', actualizarTotales);
+            });
+
+            // Calcular al cargar
+            actualizarTotales();
+        })();
+    </script>
+}

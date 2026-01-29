@@ -1,0 +1,133 @@
+@model IEnumerable<SistemaParqueaderoWEB.Models.RegistroParqueo>
+@{
+    ViewData["Title"] = "Pagos Pendientes";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h4 class="fw-semibold mb-1">Pagos Pendientes</h4>
+        <p class="text-muted mb-0">Registros de salida sin pago registrado</p>
+    </div>
+    <a asp-controller="Parqueadero" asp-action="Index" class="btn btn-light border">
+        <iconify-icon icon="solar:arrow-left-line-duotone" class="me-1"></iconify-icon>
+        Volver
+    </a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <iconify-icon icon="solar:check-circle-line-duotone" style="font-size: 4rem; color: #10b759;"></iconify-icon>
+            <h5 class="mb-2 mt-3">No hay pagos pendientes</h5>
+            <p class="text-muted mb-0">
+                Todos los registros de salida tienen su pago completado.
+            </p>
+        </div>
+    </div>
+}
+else
+{
+    <!-- Resumen -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <p class="mb-1 text-muted small">Total pendientes</p>
+                    <h4 class="mb-0 fw-semibold">@Model.Count()</h4>
+                </div>
+                <div class="col-md-4">
+                    <p class="mb-1 text-muted small">Monto total pendiente</p>
+                    <h4 class="mb-0 fw-semibold text-warning">
+                        @Model.Sum(r => r.MontoFinal ?? r.MontoTotal ?? 0).ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-CO"))
+                    </h4>
+                </div>
+                <div class="col-md-4">
+                    <p class="mb-1 text-muted small">Promedio</p>
+                    <h4 class="mb-0 fw-semibold">
+                        @(Model.Any() ? (Model.Sum(r => r.MontoFinal ?? r.MontoTotal ?? 0) / Model.Count()).ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-CO")) : "$0.00")
+                    </h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de pendientes -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="fw-semibold">Ticket</th>
+                            <th class="fw-semibold">Placa</th>
+                            <th class="fw-semibold">Tipo</th>
+                            <th class="fw-semibold">Entrada</th>
+                            <th class="fw-semibold">Salida</th>
+                            <th class="fw-semibold">Tiempo</th>
+                            <th class="fw-semibold">Monto</th>
+                            <th class="fw-semibold text-end">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var registro in Model)
+                        {
+                            var tiempo = registro.TiempoParqueado ?? TimeSpan.Zero;
+                            <tr>
+                                <td><span class="badge bg-secondary">#@registro.Id</span></td>
+                                <td><strong class="text-primary">@registro.Placa</strong></td>
+                                <td>
+                                    <span class="badge @(registro.TipoVehiculo == SistemaParqueaderoWEB.Models.TipoVehiculo.Carro ? "bg-info" : "bg-warning")">
+                                        @registro.TipoVehiculoTexto
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="small">@registro.FechaEntrada.ToString("dd/MM/yyyy")</div>
+                                    <div class="text-muted small">@registro.FechaEntrada.ToString("HH:mm")</div>
+                                </td>
+                                <td>
+                                    @if (registro.FechaSalida.HasValue)
+                                    {
+                                        <div class="small">@registro.FechaSalida.Value.ToString("dd/MM/yyyy")</div>
+                                        <div class="text-muted small">@registro.FechaSalida.Value.ToString("HH:mm")</div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (tiempo.TotalMinutes > 0)
+                                    {
+                                        <span class="small">
+                                            @if (tiempo.Days > 0)
+                                            {
+                                                <span>@tiempo.Days d </span>
+                                            }
+                                            @tiempo.Hours h @tiempo.Minutes m
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    <strong class="text-success">
+                                        @((registro.MontoFinal ?? registro.MontoTotal ?? 0).ToString("C", System.Globalization.CultureInfo.GetCultureInfo("es-CO")))
+                                    </strong>
+                                </td>
+                                <td class="text-end">
+                                    <a asp-action="RegistrarPago" asp-route-registroId="@registro.Id" class="btn btn-sm btn-success">
+                                        <iconify-icon icon="solar:wallet-money-line-duotone" class="me-1"></iconify-icon>
+                                        Registrar Pago
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
